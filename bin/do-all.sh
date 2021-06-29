@@ -15,7 +15,7 @@ Funcs=$grayFuncs
 Nb=10
 Repeat=7
 
-imSizes=0.5,1,2,3,4,8
+imSizes=0.5,1,2,4,8
 seSizes=1,2,3,4,5,6,7,8
 
 ResDir=$(echo $(hostname) | awk -F. '{print $1}')
