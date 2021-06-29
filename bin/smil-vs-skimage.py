@@ -353,8 +353,12 @@ def getCliArgs():
   parser.add_argument('--nb', default=20, help='nb execs', type=int)
   parser.add_argument('--repeat', default=7, help='nb rounds', type=int)
 
+  parser.add_argument('--minImSize',
+                      default=256,
+                      help='Min image size',
+                      type=int)
   parser.add_argument('--maxImSize',
-                      default=8192,
+                      default=4096,
                       help='Max image size',
                       type=int)
   parser.add_argument('--imGrow',
@@ -424,7 +428,7 @@ if not os.path.isfile(imPath):
 w, h = getImageSides(imPath)
 
 szCoefs = []
-k = 1.
+k = cli.minImSize / w
 while w * k <= cli.maxImSize:
   szCoefs.append(k)
   if cli.imGrow == 'a':
