@@ -2,14 +2,15 @@
 
 Files=
 
-grayFiles="lena.png"
+grayFiles="astronaut.png"
 grayFuncs="erode open hMaxima hMinima areaOpen"
 
 binFiles="cells.png gruyere.png alumine.png balls.png"
 binFuncs="distance areaThreshold label"
 
 Prefix=gray
-Funcs=$grayFuncs
+Files="$grayFiles"
+Funcs="$grayFuncs"
 
 
 Nb=10
