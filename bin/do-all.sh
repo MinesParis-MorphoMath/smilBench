@@ -1,12 +1,22 @@
 #! /bin/bash
 
 Files=
-Funcs="erode open hMaxima hMinima areaOpen"
-Funcs="hMinima hMaxima"
-Prefix=gray
 
-Nb=12
-Repeat=9
+grayFiles="lena.png"
+grayFuncs="erode open hMaxima hMinima areaOpen"
+
+binFiles="cells.png gruyere.png alumine.png balls.png"
+binFuncs="distance areaThreshold label"
+
+Prefix=gray
+Funcs=$grayFuncs
+
+
+Nb=10
+Repeat=7
+
+imSizes=0.5,1,2,3,4,8
+seSizes=1,2,3,4,5,6,7,8
 
 ResDir=$(echo $(hostname) | awk -F. '{print $1}')
 
@@ -26,8 +36,8 @@ do
       ;;
     bin)
       Prefix=bin
-      Files="cells.png gruyere.png alumine.png balls.png"
-      Funcs="distance areaThreshold"
+      Files="$binFiles"
+      Funcs="$binFuncs"
       ;;
     *)
       [ -f images/$arg ] && Files="$Files $arg"
@@ -57,6 +67,7 @@ do
     fout=${Prefix}-${bname}-${f}.txt
     bin/smil-vs-skimage.py  --fname $fname \
                             --function $f \
+                            --imSizes=$imSizes --seSizes=$seSizes \
                             --nb $Nb --repeat $Repeat \
                             > $ResDir/$fout
 
