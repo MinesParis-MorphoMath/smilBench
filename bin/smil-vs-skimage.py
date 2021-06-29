@@ -398,7 +398,7 @@ def getCliArgs():
 def getImageSides(fin):
   im = sp.Image(fin)
   width = im.getWidth()
-  heigth = im.getHeight()
+  height = im.getHeight()
   isBin = sp.isBinary(im)
   return width, height, isBin
 
