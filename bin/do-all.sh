@@ -2,7 +2,7 @@
 
 Files=
 
-grayFiles="astronaut.png"
+grayFiles="lena.png"
 grayFuncs="erode open hMaxima hMinima areaOpen"
 
 binFiles="cells.png gruyere.png alumine.png balls.png"
@@ -16,7 +16,8 @@ Funcs="$grayFuncs"
 Nb=10
 Repeat=7
 
-imSizes=4096
+minImSize=256
+maxImSize=4096
 maxSeSize=8
 
 ResDir=$(echo $(hostname) | awk -F. '{print $1}')
@@ -68,7 +69,9 @@ do
     fout=${Prefix}-${bname}-${f}.txt
     bin/smil-vs-skimage.py  --fname $fname \
                             --function $f \
-                            --maxImSize=$maxImSize --maxSeSize=$maxSeSize \
+                            --minImSize=$minImSize \
+                            --maxImSize=$maxImSize \
+                            --maxSeSize=$maxSeSize \
                             --nb $Nb --repeat $Repeat \
                             > $ResDir/$fout
 
