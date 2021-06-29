@@ -2,7 +2,7 @@
 
 Files=
 
-grayFiles="lena.png"
+grayFiles="lena.png astronaut.png"
 grayFuncs="erode open hMaxima hMinima areaOpen"
 
 binFiles="cells.png gruyere.png alumine.png balls.png"
@@ -14,10 +14,10 @@ Funcs="$grayFuncs"
 
 
 Nb=10
-Repeat=7
+Repeat=5
 
 minImSize=256
-maxImSize=4096
+maxImSize=8192
 maxSeSize=8
 
 ResDir=$(echo $(hostname) | awk -F. '{print $1}')
@@ -25,6 +25,8 @@ ResDir=$(echo $(hostname) | awk -F. '{print $1}')
 declare -i ti
 ti=$(date +%s)
 hi=$(date "+%H:%M:%S")
+
+Opt=
 
 for arg in $*
 do
@@ -40,6 +42,7 @@ do
       Prefix=bin
       Files="$binFiles"
       Funcs="$binFuncs"
+      Opt+=" --binary"
       ;;
     *)
       [ -f images/$arg ] && Files="$Files $arg"
@@ -73,6 +76,7 @@ do
                             --maxImSize=$maxImSize \
                             --maxSeSize=$maxSeSize \
                             --nb $Nb --repeat $Repeat \
+                            $Opt \
                             > $ResDir/$fout
 
     declare -i xtf

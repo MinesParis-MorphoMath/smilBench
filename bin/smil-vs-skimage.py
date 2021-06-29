@@ -52,7 +52,6 @@ import numpy as np
 
 import statistics as st
 
-
 #
 #
 #
@@ -206,7 +205,7 @@ def skTime(fs, imIn, sz, nb, repeat, px=1):
 # #    #  #    #     #    #
 #  ####   #    #     #    ######
 #
-def doSmil(fin=None, fs=None, szIm=[], szSE=[1], nb=10, repeat=7):
+def doSmil(cli, fin=None, fs=None, szIm=[], szSE=[1], nb=10, repeat=7):
   if fs is None:
     return []
 
@@ -254,7 +253,7 @@ def doSmil(fin=None, fs=None, szIm=[], szSE=[1], nb=10, repeat=7):
 #
 
 
-def doSkImage(fin=None, fs=None, szIm=[], szSE=[1], nb=10, repeat=7):
+def doSkImage(cli, fin=None, fs=None, szIm=[], szSE=[1], nb=10, repeat=7):
   if fs is None:
     return []
 
@@ -273,13 +272,13 @@ def doSkImage(fin=None, fs=None, szIm=[], szSE=[1], nb=10, repeat=7):
   printHeader()
   for r in szIm:
     if r != 1:
-      #imt = 255 * rescale(im, r, anti_aliasing=True, multichannel=False)
-      #imt = imt.astype('uint8')
-
+      order = 1
+      if cli.binary:
+        order = 0
       imt = rescale(im,
                     r,
                     preserve_range=True,
-                    order=0,
+                    order=order,
                     anti_aliasing=True,
                     multichannel=False)
     else:
@@ -313,7 +312,9 @@ def printSpeedUp(sz, msm, msk):
 
   print("* Speed-up : (dt_skimage / dt_Smil)")
   print()
-  h = "  {:5s} | {:>11s} | {:>11s} | {:^21s}".format('', 'T(Smil)', 'T(skImage)', 'T(skImage) / T(Smil)')
+  h = "  {:5s} | {:>11s} | {:>11s} | {:^21s}".format('', 'T(Smil)',
+                                                     'T(skImage)',
+                                                     'T(skImage) / T(Smil)')
   print(h)
   print('-' * (len(h) + 3))
   for i in range(0, len(sz)):
@@ -371,6 +372,11 @@ def getCliArgs():
                       help='Max Structuring Element size',
                       type=int)
 
+  parser.add_argument('--binary',
+                      default=False,
+                      help='Image is binary',
+                      action="store_true")
+
   sFuncs = ' | '.join(funcs)
   parser.add_argument('--function', default='erode', help=sFuncs, type=str)
   cli = parser.parse_args()
@@ -391,9 +397,10 @@ def getCliArgs():
 
 def getImageSides(fin):
   im = sp.Image(fin)
-  w = im.getWidth()
-  h = im.getHeight()
-  return w, h
+  width = im.getWidth()
+  heigth = im.getHeight()
+  isBin = sp.isBinary(im)
+  return width, height, isBin
 
 
 #
@@ -425,7 +432,7 @@ if not os.path.isfile(imPath):
   print("Image file {:s} not found".format(imPath))
   exit(1)
 
-w, h = getImageSides(imPath)
+w, h, isBin = getImageSides(imPath)
 
 szCoefs = []
 k = cli.minImSize / w
@@ -438,7 +445,10 @@ while w * k <= cli.maxImSize:
 if len(szCoefs) == 0:
   szCoefs.append(1.)
 
-seSizes = [k for k in range(1,cli.maxSeSize + 1)]
+if isBin and not cli.binary:
+  cli.binary = True
+
+seSizes = [k for k in range(1, cli.maxSeSize + 1)]
 
 #
 # Varying image size
@@ -451,8 +461,8 @@ msm = []
 msk = []
 
 ti = time.time()
-msm = doSmil(imPath, cli.function, szCoefs, [1], nb=nb, repeat=repeat)
-msk = doSkImage(imPath, cli.function, szCoefs, [1], nb=nb, repeat=repeat)
+msm = doSmil(cli, imPath, cli.function, szCoefs, [1], nb=nb, repeat=repeat)
+msk = doSkImage(cli, imPath, cli.function, szCoefs, [1], nb=nb, repeat=repeat)
 tf = time.time()
 
 sz = w * np.array(szCoefs)
@@ -472,8 +482,13 @@ msk = []
 
 if not cli.function in noStrEltCheck:
   ti = time.time()
-  msm = doSmil(imPath, cli.function, [1], seSizes, nb=nb, repeat=repeat)
-  msk = doSkImage(imPath, cli.function, [1], seSizes, nb=nb, repeat=repeat)
+  msm = doSmil(cli, imPath, cli.function, [1], seSizes, nb=nb, repeat=repeat)
+  msk = doSkImage(cli,
+                  imPath,
+                  cli.function, [1],
+                  seSizes,
+                  nb=nb,
+                  repeat=repeat)
   tf = time.time()
 
   sz = np.array(seSizes)
