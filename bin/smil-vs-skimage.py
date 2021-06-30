@@ -348,9 +348,37 @@ def printSpeedUp(sz, msm, msk):
 #
 #
 #
+def saveResults(cli, sz, tSm, tSk, fName = None, suffix = "szim"):
+  if len(tSm) != len(sz) or len(tSk) != len(sz):
+    return
+  # fname = gray|bin + image + function + szse|seim
+  if fName is None:
+    if cli.binary:
+      fName = "bin"
+    else:
+      fName = "gray"
+    b, x = os.path.splitext(cli.fname)
+    fName += '-{:s}-{:s}-{:s}.csv'.format(b, cli.function, suffix)
+  
+  if not os.path.isdir(cli.node):
+    os.mkdir(cli.node)
+  fPath = os.path.join(cli.node, fName)
+
+  with open(fPath, "w") as fout:
+    s = '{:s};{:s};{:s}\n'.format(suffix, "Smil", "skImage")
+    fout.write(s)
+    for i in range(0, len(sz)):
+      s = "{:d};{:.5f};{:.5f}\n".format(int(sz[i]),tSm[i],tSk[i])
+      fout.write(s)
+
+
+#
+#
+#
 def printElapsed(ti, tf):
   print()
   print('* Elapsed time : {:.1f} s'.format(float(tf - ti)))
+
 
 #
 #
@@ -443,6 +471,7 @@ def getImageSizes(fin):
   return width, height, depth, isBin
 
 
+
 #
 #
 #
@@ -463,6 +492,8 @@ imPath = os.path.join('images', fin)
 if not os.path.isfile(imPath):
   print("Image file {:s} not found".format(imPath))
   exit(1)
+
+cli.node = os.uname().nodename.split('.')[0]
 
 width, height, depth, isBin = getImageSizes(imPath)
 
@@ -516,6 +547,7 @@ tf = time.time()
 sz = width * np.array(szCoefs)
 
 printSpeedUp(sz, msm, msk)
+saveResults(cli, sz, msm, msk, fName = None, suffix = "szim")
 printElapsed(ti, tf)
 
 #
@@ -539,6 +571,7 @@ if not cli.function in noStrEltCheck:
 
   sz = np.array(seSizes)
   printSpeedUp(sz, msm, msk)
+  saveResults(cli, sz, msm, msk, fName = None, suffix = "szse")
   printElapsed(ti, tf)
   print()
 
