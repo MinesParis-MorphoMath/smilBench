@@ -35,7 +35,9 @@
 import os
 import sys
 import time
+
 import timeit as tit
+from datetime import datetime, timezone
 
 import argparse as ap
 
@@ -58,7 +60,7 @@ import statistics as st
 
 
 def printHeader():
-  fmt = '{:4s} - {:>6s} {:2s} - {:>11s} {:>11s} {:>11s} {:>11s}'
+  fmt = '{:4s} - {:>6s} {:2s} - {:>10s} {:>10s} {:>10s} {:>10s}'
   s = fmt.format('', 'Side', 'SE', 'Mean', 'Std Dev', 'Min', 'Max')
   print(s)
   print('-' * len(s))
@@ -71,6 +73,17 @@ def printHeader():
 #   #       #    #    #  #          #       #
 #   #       #    #    #  #          #       #
 #   #       #    #    #  ######     #       #
+#
+
+
+
+#
+#  ####   #    #     #    #
+# #       ##  ##     #    #
+#  ####   # ## #     #    #
+#      #  #    #     #    #
+# #    #  #    #     #    #
+#  ####   #    #     #    ######
 #
 def smilTime(fs, imIn, sz, nb, repeat, px=1):
   imOut = sp.Image(imIn)
@@ -130,20 +143,84 @@ def smilTime(fs, imIn, sz, nb, repeat, px=1):
 
   return dt
 
+#
+#
+#
+def doSmil(cli, fin=None, fs=None, szIm=[], szSE=[1], nb=10, repeat=7):
+  if fs is None:
+    return []
+
+  print("* Smil\n")
+
+  im = sp.Image(fin)
+  side = im.getWidth()
+
+  imt = sp.Image(im)
+
+  m = []
+  printHeader()
+  for r in szIm:
+    if r != 1.:
+      if sp.isBinary(im):
+        sp.scale(im, r, imt, "closest")
+      else:
+        sp.scale(im, r, r, imt, "bilinear")
+    else:
+      sp.copy(im, imt)
+    imo = sp.Image(imt)
+
+    for sz in szSE:
+      dt = smilTime(fs, imt, sz, nb, repeat, r)
+      fmt = '{:4.1f} - {:6.0f} {:2d} - {:10.3f} {:10.3f} {:10.3f} {:10.3f} - (ms)'
+      print(
+        fmt.format(r, r * side, sz, dt.mean(), dt.std(), dt.min(), dt.max()))
+      m.append(dt.mean())
+  print()
+  return np.array(m)
+
 
 #
+#  ####   #    #     #    #    #    ##     ####   ######
+# #       #   #      #    ##  ##   #  #   #    #  #
+#  ####   ####       #    # ## #  #    #  #       #####
+#      #  #  #       #    #    #  ######  #  ###  #
+# #    #  #   #      #    #    #  #    #  #    #  #
+#  ####   #    #     #    #    #  #    #   ####   ######
 #
+
 #
-def mkCrossSE(sz=1):
+# Structuring elements
+#
+def mkSquareSE(sz=1, D3 = False):
   dim = 2 * sz + 1
-  se = np.ndarray((dim, dim), dtype='uint8')
-  se[:, :] = 0
-  se[:, dim // 2] = 1
-  se[dim // 2, :] = 1
+  if D3:
+    se = np.ndarray((dim, dim, dim), dtype='uint8')
+    se[:, :, :] = 1
+  else:
+    se = np.ndarray((dim, dim), dtype='uint8')
+    se[:, :] = 1
+  
+  return se
+
+def mkCrossSE(sz=1, D3 = False):
+  dim = 2 * sz + 1
+  if D3:
+    se = np.ndarray((dim, dim, dim), dtype='uint8')
+    se[:, :, :] = 0
+    se[:, :, dim // 2] = 1 
+    se[:, dim // 2, :] = 1
+    se[dim // 2, :, :] = 1
+  else:
+    se = np.ndarray((dim, dim), dtype='uint8')
+    se[:, :] = 0
+    se[:, dim // 2] = 1
+    se[dim // 2, :] = 1
 
   return se
 
-
+#
+#
+#
 def skTime(fs, imIn, sz, nb, repeat, px=1):
   dt = np.zeros(repeat)
   se = mkCrossSE(sz)
@@ -198,71 +275,13 @@ def skTime(fs, imIn, sz, nb, repeat, px=1):
 
 
 #
-#  ####   #    #     #    #
-# #       ##  ##     #    #
-#  ####   # ## #     #    #
-#      #  #    #     #    #
-# #    #  #    #     #    #
-#  ####   #    #     #    ######
 #
-def doSmil(cli, fin=None, fs=None, szIm=[], szSE=[1], nb=10, repeat=7):
-  if fs is None:
-    return []
-
-  v = []
-  if len(szIm) > 1:
-    v.append("Image size")
-  if len(szSE) > 1:
-    v.append("Structuring element")
-  print("* Smil : {:s}\n".format(" and ".join(v)))
-
-  im = sp.Image(fin)
-  side = im.getWidth()
-
-  imt = sp.Image(im)
-
-  m = []
-  printHeader()
-  for r in szIm:
-    if r != 1.:
-      if sp.isBinary(im):
-        sp.scale(im, r, imt, "closest")
-      else:
-        sp.scale(im, r, r, imt, "bilinear")
-    else:
-      sp.copy(im, imt)
-    imo = sp.Image(imt)
-
-    for sz in szSE:
-      dt = smilTime(fs, imt, sz, nb, repeat, r)
-      fmt = '{:4.1f} - {:6.0f} {:2d} - {:11.4f} {:11.4f} {:11.4f} {:11.4f} - (ms)'
-      print(
-        fmt.format(r, r * side, sz, dt.mean(), dt.std(), dt.min(), dt.max()))
-      m.append(dt.mean())
-  print()
-  return np.array(m)
-
-
 #
-#  ####   #    #     #    #    #    ##     ####   ######
-# #       #   #      #    ##  ##   #  #   #    #  #
-#  ####   ####       #    # ## #  #    #  #       #####
-#      #  #  #       #    #    #  ######  #  ###  #
-# #    #  #   #      #    #    #  #    #  #    #  #
-#  ####   #    #     #    #    #  #    #   ####   ######
-#
-
-
 def doSkImage(cli, fin=None, fs=None, szIm=[], szSE=[1], nb=10, repeat=7):
   if fs is None:
     return []
 
-  v = []
-  if len(szIm) > 1:
-    v.append("Image size")
-  if len(szSE) > 1:
-    v.append("Structuring element")
-  print("* skImage : {:s}\n".format(" and ".join(v)))
+  print("* skImage\n")
 
   im = io.imread(fin)
   side = im.shape[0]
@@ -286,7 +305,7 @@ def doSkImage(cli, fin=None, fs=None, szIm=[], szSE=[1], nb=10, repeat=7):
 
     for sz in szSE:
       dt = skTime(fs, imt, sz, nb, repeat, r)
-      fmt = '{:4.1f} - {:6.0f} {:2d} - {:11.4f} {:11.4f} {:11.4f} {:11.4f} - (ms)'
+      fmt = '{:4.1f} - {:6.0f} {:2d} - {:10.3f} {:10.3f} {:10.3f} {:10.3f} - (ms)'
       print(
         fmt.format(r, r * side, sz, dt.mean(), dt.std(), dt.min(), dt.max()))
       m.append(dt.mean())
@@ -302,6 +321,10 @@ def doSkImage(cli, fin=None, fs=None, szIm=[], szSE=[1], nb=10, repeat=7):
 # #    #  #    #     #    #   ##
 # #    #  #    #     #    #    #
 #
+
+#
+#
+#
 def printSpeedUp(sz, msm, msk):
   if len(msk) != len(sz) or len(msk) != len(msm):
     return
@@ -314,20 +337,32 @@ def printSpeedUp(sz, msm, msk):
   print()
   h = "  {:5s} | {:>11s} | {:>11s} | {:^21s}".format('', 'T(Smil)',
                                                      'T(skImage)',
-                                                     'T(skImage) / T(Smil)')
+                                                     'T(skImage)/T(Smil) [*]')
   print(h)
   print('-' * (len(h) + 3))
   for i in range(0, len(sz)):
-    print("  {:5d} | {:11.4f} | {:11.4f} | {:14.3f} {:6.3f}".format(
+    print("  {:5d} | {:11.3f} | {:11.3f} | {:14.3f} {:6.3f}".format(
       int(sz[i]), msm[i], msk[i], rkm[i], lKm[i], rmk[i], lMk[i]))
-  print("\n  - OBS: ratio and log10(ratio) in columns")
+  print("\n  - [*] : ratio and log10(ratio) in columns")
 
-
+#
+#
+#
 def printElapsed(ti, tf):
   print()
   print('* Elapsed time : {:.1f} s'.format(float(tf - ti)))
-  print()
 
+#
+#
+#
+def printSectionHeader(s = None):
+  print()
+  print('-*-' * 25)
+  print()
+  if not s is None:
+    s = "*** " + s + " ***"
+    print(s.center(64))
+    print()
 
 # -----------------------------------------------------------------------------
 #
@@ -340,7 +375,9 @@ funcs = [
 
 noStrEltCheck = ['areaOpen', 'distance', 'areaThreshold']
 
-
+#
+#
+#
 def getCliArgs():
   parser = ap.ArgumentParser()
   parser.add_argument('--fname',
@@ -394,13 +431,16 @@ def getCliArgs():
 
   return cli
 
-
-def getImageSides(fin):
+#
+#
+#
+def getImageSizes(fin):
   im = sp.Image(fin)
   width = im.getWidth()
   height = im.getHeight()
+  depth = im.getDepth()
   isBin = sp.isBinary(im)
-  return width, height, isBin
+  return width, height, depth, isBin
 
 
 #
@@ -412,7 +452,6 @@ nb = 20
 repeat = 7
 fSel = 3
 
-fin = "lena.png"
 
 fin = cli.fname
 nb = cli.nb
@@ -420,23 +459,33 @@ repeat = cli.repeat
 fSel = cli.fSel
 funcName = cli.function
 
-print('Image    : {:s}'.format(fin))
-print('  func   : {:5d} {:s}'.format(fSel, cli.function))
-print('  nb     : {:5d}'.format(nb))
-print('  repeat : {:5d}'.format(repeat))
-
-print()
-
 imPath = os.path.join('images', fin)
 if not os.path.isfile(imPath):
   print("Image file {:s} not found".format(imPath))
   exit(1)
 
-w, h, isBin = getImageSides(imPath)
+width, height, depth, isBin = getImageSizes(imPath)
+
+dt = datetime.now()
+print('Date     : {:s}'.format(dt.strftime("%d/%m/%Y %I:%M:%S %p")))
+print('Image    : {:s}'.format(fin))
+print('  width  : {:5d}'.format(width))
+print('  height : {:5d}'.format(height))
+print('  depth  : {:5d}'.format(depth))
+if isBin:
+  print('  type   : binary')
+else:
+  print('  type   : gray')
+print('Function : {:s}'.format(cli.function))
+print('  nb     : {:5d}'.format(nb))
+print('  repeat : {:5d}'.format(repeat))
+
+print()
+
 
 szCoefs = []
-k = cli.minImSize / w
-while w * k <= cli.maxImSize:
+k = cli.minImSize / width
+while width * k <= cli.maxImSize:
   szCoefs.append(k)
   if cli.imGrow == 'a':
     k += 1
@@ -453,9 +502,8 @@ seSizes = [k for k in range(1, cli.maxSeSize + 1)]
 #
 # Varying image size
 #
-print()
-print('-*-' * 25)
-print()
+
+printSectionHeader("Image size")
 
 msm = []
 msk = []
@@ -465,7 +513,7 @@ msm = doSmil(cli, imPath, cli.function, szCoefs, [1], nb=nb, repeat=repeat)
 msk = doSkImage(cli, imPath, cli.function, szCoefs, [1], nb=nb, repeat=repeat)
 tf = time.time()
 
-sz = w * np.array(szCoefs)
+sz = width * np.array(szCoefs)
 
 printSpeedUp(sz, msm, msk)
 printElapsed(ti, tf)
@@ -473,14 +521,12 @@ printElapsed(ti, tf)
 #
 # Varying Structuring Element Size
 #
-print()
-print('-*-' * 25)
-print()
 
 msm = []
 msk = []
 
 if not cli.function in noStrEltCheck:
+  printSectionHeader("Structuring element size")
   ti = time.time()
   msm = doSmil(cli, imPath, cli.function, [1], seSizes, nb=nb, repeat=repeat)
   msk = doSkImage(cli,
@@ -495,7 +541,6 @@ if not cli.function in noStrEltCheck:
   printSpeedUp(sz, msm, msk)
   printElapsed(ti, tf)
   print()
-  print('-*-' * 25)
-  print()
 
-print('\n')
+printSectionHeader()
+
