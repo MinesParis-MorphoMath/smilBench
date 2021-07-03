@@ -47,7 +47,7 @@ do
       Opt+=" --binary"
       ;;
     *)
-      [ -f images/$arg ] && Files="$Files $arg"
+      [ -f images/$arg ] && Files="$arg"
       ;;
   esac
 done
