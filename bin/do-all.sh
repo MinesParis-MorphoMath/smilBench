@@ -7,7 +7,8 @@ grayFuncs="erode open hMaxima hMinima areaOpen"
 grayFuncs="erode open hMaxima hMinima"
 
 binFiles="cells.png gruyere.png alumine.png balls.png"
-binFuncs="distance areaThreshold label"
+binFuncs="erode open distance areaThreshold label"
+binFuncs="erode open distance label"
 
 Prefix=gray
 Files="$grayFiles"

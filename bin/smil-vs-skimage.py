@@ -76,7 +76,6 @@ def printHeader():
 #
 
 
-
 #
 #  ####   #    #     #    #
 # #       ##  ##     #    #
@@ -85,10 +84,13 @@ def printHeader():
 # #    #  #    #     #    #
 #  ####   #    #     #    ######
 #
-def smilTime(fs, imIn, sz, nb, repeat, px=1):
+def smilTime(cli, fs, imIn, sz, nb, repeat, px=1):
   imOut = sp.Image(imIn)
   sp.copy(imIn, imOut)
-  se = sp.CrossSE(sz)
+  if cli.squareSe:
+    se = sp.SquSE(sz)
+  else:
+    se = sp.CrossSE(sz)
 
   dt = np.zeros(repeat)
 
@@ -143,6 +145,7 @@ def smilTime(fs, imIn, sz, nb, repeat, px=1):
 
   return dt
 
+
 #
 #
 #
@@ -170,7 +173,7 @@ def doSmil(cli, fin=None, fs=None, szIm=[], szSE=[1], nb=10, repeat=7):
     imo = sp.Image(imt)
 
     for sz in szSE:
-      dt = smilTime(fs, imt, sz, nb, repeat, r)
+      dt = smilTime(cli, fs, imt, sz, nb, repeat, r)
       fmt = '{:4.1f} - {:6.0f} {:2d} - {:10.3f} {:10.3f} {:10.3f} {:10.3f} - (ms)'
       print(
         fmt.format(r, r * side, sz, dt.mean(), dt.std(), dt.min(), dt.max()))
@@ -188,10 +191,11 @@ def doSmil(cli, fin=None, fs=None, szIm=[], szSE=[1], nb=10, repeat=7):
 #  ####   #    #     #    #    #  #    #   ####   ######
 #
 
+
 #
 # Structuring elements
 #
-def mkSquareSE(sz=1, D3 = False):
+def mkSquareSE(sz=1, D3=False):
   dim = 2 * sz + 1
   if D3:
     se = np.ndarray((dim, dim, dim), dtype='uint8')
@@ -199,15 +203,16 @@ def mkSquareSE(sz=1, D3 = False):
   else:
     se = np.ndarray((dim, dim), dtype='uint8')
     se[:, :] = 1
-  
+
   return se
 
-def mkCrossSE(sz=1, D3 = False):
+
+def mkCrossSE(sz=1, D3=False):
   dim = 2 * sz + 1
   if D3:
     se = np.ndarray((dim, dim, dim), dtype='uint8')
     se[:, :, :] = 0
-    se[:, :, dim // 2] = 1 
+    se[:, :, dim // 2] = 1
     se[:, dim // 2, :] = 1
     se[dim // 2, :, :] = 1
   else:
@@ -218,12 +223,16 @@ def mkCrossSE(sz=1, D3 = False):
 
   return se
 
+
 #
 #
 #
-def skTime(fs, imIn, sz, nb, repeat, px=1):
+def skTime(cli, fs, imIn, sz, nb, repeat, px=1):
   dt = np.zeros(repeat)
-  se = mkCrossSE(sz)
+  if cli.squareSe:
+    se = mkSquareSE(sz)
+  else:
+    se = mkCrossSE(sz)
 
   if fs == 'erode':
     dt = tit.repeat(lambda: skm.erosion(imIn, se), number=nb, repeat=repeat)
@@ -304,7 +313,7 @@ def doSkImage(cli, fin=None, fs=None, szIm=[], szSE=[1], nb=10, repeat=7):
       imt = im.copy()
 
     for sz in szSE:
-      dt = skTime(fs, imt, sz, nb, repeat, r)
+      dt = skTime(cli, fs, imt, sz, nb, repeat, r)
       fmt = '{:4.1f} - {:6.0f} {:2d} - {:10.3f} {:10.3f} {:10.3f} {:10.3f} - (ms)'
       print(
         fmt.format(r, r * side, sz, dt.mean(), dt.std(), dt.min(), dt.max()))
@@ -321,6 +330,7 @@ def doSkImage(cli, fin=None, fs=None, szIm=[], szSE=[1], nb=10, repeat=7):
 # #    #  #    #     #    #   ##
 # #    #  #    #     #    #    #
 #
+
 
 #
 #
@@ -345,10 +355,11 @@ def printSpeedUp(sz, msm, msk):
       int(sz[i]), msm[i], msk[i], rkm[i], lKm[i], rmk[i], lMk[i]))
   print("\n  - [*] : ratio and log10(ratio) in columns")
 
+
 #
 #
 #
-def saveResults(cli, sz, tSm, tSk, fName = None, suffix = "szim"):
+def saveResults(cli, sz, tSm, tSk, fName=None, suffix="szim"):
   if len(tSm) != len(sz) or len(tSk) != len(sz):
     return
   # fname = gray|bin + image + function + szse|seim
@@ -359,7 +370,7 @@ def saveResults(cli, sz, tSm, tSk, fName = None, suffix = "szim"):
       fName = "gray"
     b, x = os.path.splitext(cli.fname)
     fName += '-{:s}-{:s}-{:s}.csv'.format(b, cli.function, suffix)
-  
+
   if not os.path.isdir(cli.node):
     os.mkdir(cli.node)
   fPath = os.path.join(cli.node, fName)
@@ -368,7 +379,7 @@ def saveResults(cli, sz, tSm, tSk, fName = None, suffix = "szim"):
     s = '{:s};{:s};{:s}\n'.format(suffix, "Smil", "skImage")
     fout.write(s)
     for i in range(0, len(sz)):
-      s = "{:d};{:.5f};{:.5f}\n".format(int(sz[i]),tSm[i],tSk[i])
+      s = "{:d};{:.5f};{:.5f}\n".format(int(sz[i]), tSm[i], tSk[i])
       fout.write(s)
 
 
@@ -383,7 +394,7 @@ def printElapsed(ti, tf):
 #
 #
 #
-def printSectionHeader(s = None):
+def printSectionHeader(s=None):
   print()
   print('-*-' * 25)
   print()
@@ -391,6 +402,7 @@ def printSectionHeader(s = None):
     s = "*** " + s + " ***"
     print(s.center(64))
     print()
+
 
 # -----------------------------------------------------------------------------
 #
@@ -402,6 +414,7 @@ funcs = [
 ]
 
 noStrEltCheck = ['areaOpen', 'distance', 'areaThreshold']
+
 
 #
 #
@@ -441,6 +454,10 @@ def getCliArgs():
                       default=False,
                       help='Image is binary',
                       action="store_true")
+  parser.add_argument('--squareSe',
+                      default=False,
+                      help='Structuring Element Square (default is Cross)',
+                      action='store_true')
 
   sFuncs = ' | '.join(funcs)
   parser.add_argument('--function', default='erode', help=sFuncs, type=str)
@@ -459,6 +476,7 @@ def getCliArgs():
 
   return cli
 
+
 #
 #
 #
@@ -471,7 +489,6 @@ def getImageSizes(fin):
   return width, height, depth, isBin
 
 
-
 #
 #
 #
@@ -480,7 +497,6 @@ cli = getCliArgs()
 nb = 20
 repeat = 7
 fSel = 3
-
 
 fin = cli.fname
 nb = cli.nb
@@ -512,7 +528,6 @@ print('  nb     : {:5d}'.format(nb))
 print('  repeat : {:5d}'.format(repeat))
 
 print()
-
 
 szCoefs = []
 k = cli.minImSize / width
@@ -547,7 +562,7 @@ tf = time.time()
 sz = width * np.array(szCoefs)
 
 printSpeedUp(sz, msm, msk)
-saveResults(cli, sz, msm, msk, fName = None, suffix = "szim")
+saveResults(cli, sz, msm, msk, fName=None, suffix="szim")
 printElapsed(ti, tf)
 
 #
@@ -571,9 +586,8 @@ if not cli.function in noStrEltCheck:
 
   sz = np.array(seSizes)
   printSpeedUp(sz, msm, msk)
-  saveResults(cli, sz, msm, msk, fName = None, suffix = "szse")
+  saveResults(cli, sz, msm, msk, fName=None, suffix="szse")
   printElapsed(ti, tf)
   print()
 
 printSectionHeader()
-
