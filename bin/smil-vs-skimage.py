@@ -125,13 +125,17 @@ def smilTime(cli, fs, imIn, sz, nb, repeat, px=1):
                     repeat=repeat)
 
   if fs == 'areaOpen':
-    dt = tit.repeat(lambda: sp.areaOpen(imIn, int(1000 * px * px), imOut, se),
+    if cli.arg is None:
+      cli.arg = 1000
+    dt = tit.repeat(lambda: sp.areaOpen(imIn, int(cli.arg * px * px), imOut, se),
                     number=nb,
                     repeat=repeat)
 
   if fs == 'areaThreshold':
+    if cli.arg is None:
+      cli.arg = 1000
     dt = tit.repeat(
-      lambda: sp.areaThreshold(imIn, int(1000 * px * px), imOut, True),
+      lambda: sp.areaThreshold(imIn, int(cli.arg * px * px), imOut, True),
       number=nb,
       repeat=repeat)
 
@@ -261,14 +265,18 @@ def skTime(cli, fs, imIn, sz, nb, repeat, px=1):
                     repeat=repeat)
 
   if fs == 'areaOpen':
+    if cli.arg is None:
+      cli.arg = 1000
     dt = tit.repeat(lambda: skm.area_opening(
-      imIn, area_threshold=int(1000 * px * px), connectivity=1),
+      imIn, area_threshold=int(cli.arg * px * px), connectivity=1),
                     number=nb,
                     repeat=repeat)
 
   if fs == 'areaThreshold':
+    if cli.arg is None:
+      cli.arg = 1000
     dt = tit.repeat(lambda: skm.area_opening(
-      imIn, area_threshold=int(1000 * px * px), connectivity=1),
+      imIn, area_threshold=int(cli.arg * px * px), connectivity=1),
                     number=nb,
                     repeat=repeat)
 
@@ -458,6 +466,10 @@ def getCliArgs():
                       default=False,
                       help='Structuring Element Square (default is Cross)',
                       action='store_true')
+  
+  parser.add_argument('--arg',
+                      help='Generic argument',
+                      type=float)
 
   sFuncs = ' | '.join(funcs)
   parser.add_argument('--function', default='erode', help=sFuncs, type=str)
