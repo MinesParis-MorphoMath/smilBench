@@ -46,6 +46,12 @@ do
       Funcs="$binFuncs"
       Opt+=" --binary"
       ;;
+    nb=*)
+      Nb=$(echo $arg | awk -F= '{print $2}' | sed -e "s/,/ /g")
+      ;;
+    repeat=*)
+      Repeat=$(echo $arg | awk -F= '{print $2}' | sed -e "s/,/ /g")
+      ;;
     *)
       [ -f images/$arg ] && Files="$arg"
       ;;

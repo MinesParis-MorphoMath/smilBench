@@ -126,14 +126,14 @@ def smilTime(cli, fs, imIn, sz, nb, repeat, px=1):
 
   if fs == 'areaOpen':
     if cli.arg is None:
-      cli.arg = 1000
+      cli.arg = 500
     dt = tit.repeat(lambda: sp.areaOpen(imIn, int(cli.arg * px * px), imOut, se),
                     number=nb,
                     repeat=repeat)
 
   if fs == 'areaThreshold':
     if cli.arg is None:
-      cli.arg = 1000
+      cli.arg = 500
     dt = tit.repeat(
       lambda: sp.areaThreshold(imIn, int(cli.arg * px * px), imOut, True),
       number=nb,
