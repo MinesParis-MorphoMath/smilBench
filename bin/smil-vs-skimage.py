@@ -49,6 +49,10 @@ import skimage.morphology as skm
 from skimage.transform import rescale, resize, downscale_local_mean
 
 import scipy.ndimage as sci
+from scipy import ndimage as ndi
+
+from skimage.segmentation import watershed
+from skimage.feature import peak_local_max
 
 import numpy as np
 
@@ -85,6 +89,22 @@ def printHeader():
 #  ####   #    #     #    ######
 #
 def smilTime(cli, fs, imIn, sz, nb, repeat, px=1):
+  
+  #
+  #
+  #
+  def binWatershed(imIn, imOut):
+    se = sp.HexSE()
+    imDist = sp.Image(imIn)
+    sp.distance(imIn, imDist)
+    sp.inv(imDist, imDist)
+    sp.watershed(imDist, imOut, se)
+    sp.inv(imOut, imOut)
+    sp.inf(imIn, imOut, imOut)
+  
+  #
+  #
+  #
   imOut = sp.Image(imIn)
   sp.copy(imIn, imOut)
   if cli.squareSe:
@@ -124,6 +144,11 @@ def smilTime(cli, fs, imIn, sz, nb, repeat, px=1):
                     number=nb,
                     repeat=repeat)
 
+  if fs == 'binWatershed':
+    dt = tit.repeat(lambda: binWatershed(imIn, imOut),
+                    number=nb,
+                    repeat=repeat)
+    
   if fs == 'areaOpen':
     if cli.arg is None:
       cli.arg = 500
@@ -232,6 +257,22 @@ def mkCrossSE(sz=1, D3=False):
 #
 #
 def skTime(cli, fs, imIn, sz, nb, repeat, px=1):
+
+  #
+  #
+  #
+  def binWatershed(imIn):
+    # https://scikit-image.org/docs/dev/auto_examples/segmentation/plot_watershed.html
+    distance = ndi.distance_transform_edt(imIn)
+    coords = peak_local_max(distance, footprint=np.ones((3, 3)), labels=imIn)
+    mask = np.zeros(distance.shape, dtype=bool)
+    mask[tuple(coords.T)] = True
+    markers, _ = ndi.label(mask)
+    labels = watershed(-distance, markers, mask=imIn)
+  
+  #
+  #
+  #
   dt = np.zeros(repeat)
   if cli.squareSe:
     se = mkSquareSE(sz)
@@ -261,6 +302,11 @@ def skTime(cli, fs, imIn, sz, nb, repeat, px=1):
 
   if fs == 'fastLabel':
     dt = tit.repeat(lambda: skm.label(imIn, connectivity=2),
+                    number=nb,
+                    repeat=repeat)
+
+  if fs == 'binWatershed':
+    dt = tit.repeat(lambda: binWatershed(imIn),
                     number=nb,
                     repeat=repeat)
 
@@ -418,10 +464,10 @@ def printSectionHeader(s=None):
 
 funcs = [
   'erode', 'open', 'hMaxima', 'hMinima', 'label', 'fastLabel', 'areaOpen',
-  'distance', 'areaThreshold'
+  'distance', 'areaThreshold', 'binWatershed'
 ]
 
-noStrEltCheck = ['areaOpen', 'distance', 'areaThreshold']
+noStrEltCheck = ['areaOpen', 'distance', 'areaThreshold', 'binWatershed']
 
 
 #
