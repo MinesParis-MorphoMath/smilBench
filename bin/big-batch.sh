@@ -1,3 +1,10 @@
+#! /bin/bash
+
+DOIT=no
+for opt in $*
+do
+  [ "$opt" == "yes" ] && DOIT=yes
+done
 
 imBin=""
 imBin+=" alumine.png"
@@ -22,14 +29,20 @@ imGray+=" lena.png"
 for im in $imBin
 do
   echo "Bin   : $im"
-  #bin/do-all.sh bin $im
+  [ "$DOIT" == "yes" ] && bin/do-all.sh bin $im
+  [ -f stopnow ] && exit 1
+  [ "$DOIT" == "yes" ] && bin/do-install.sh
 done
+echo ""
 
 for im in $imGray
 do
   echo "Gray  : $im"
-  #bin/do-all.sh gray $im
+  [ "$DOIT" == "yes" ] && bin/do-all.sh gray $im
+  [ -f stopnow ] && exit 1
+  [ "$DOIT" == "yes" ] && bin/do-install.sh
 done
+echo ""
 
 #
 # A little bit heavier
@@ -37,14 +50,20 @@ done
 for im in $imBin
 do
   echo "Bin   : $im"
-  #bin/do-all.sh bin funcs=watershed $im
+  [ "$DOIT" == "yes" ] && bin/do-all.sh bin funcs=watershed $im
+  [ -f stopnow ] && exit 1
+  [ "$DOIT" == "yes" ] && bin/do-install.sh
 done
+echo ""
 
 for im in $imBin
 do
   echo "Bin   : $im"
-  #bin/do-all.sh bin funcs=areaThreshold $im nb=5
+  [ "$DOIT" == "yes" ] && bin/do-all.sh bin funcs=areaThreshold $im nb=5
+  [ -f stopnow ] && exit 1
+  [ "$DOIT" == "yes" ] && bin/do-install.sh
 done
+echo ""
 
 #
 #
@@ -52,5 +71,8 @@ done
 for im in $imGray
 do
   echo "Gray  : $im"
-  #bin/do-all.sh gray $im funcs=areaOpen nb=5
+  [ "$DOIT" == "yes" ] && bin/do-all.sh gray $im funcs=areaOpen nb=5
+  [ -f stopnow ] && exit 1
+  [ "$DOIT" == "yes" ] && bin/do-install.sh
 done
+echo ""
