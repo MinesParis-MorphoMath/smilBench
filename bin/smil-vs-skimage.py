@@ -89,7 +89,7 @@ def printHeader():
 #  ####   #    #     #    ######
 #
 def smilTime(cli, fs, imIn, sz, nb, repeat, px=1):
-  
+
   #
   #
   #
@@ -101,7 +101,7 @@ def smilTime(cli, fs, imIn, sz, nb, repeat, px=1):
     sp.watershed(imDist, imOut, se)
     sp.inv(imOut, imOut)
     sp.inf(imIn, imOut, imOut)
-  
+
   #
   #
   #
@@ -145,24 +145,28 @@ def smilTime(cli, fs, imIn, sz, nb, repeat, px=1):
                     repeat=repeat)
 
   if fs == 'watershed':
-    dt = tit.repeat(lambda: binWatershed(imIn, imOut),
-                    number=nb,
-                    repeat=repeat)
-    
+    if cli.binary:
+      dt = tit.repeat(lambda: binWatershed(imIn, imOut),
+                      number=nb,
+                      repeat=repeat)
+    else:
+      dt = []
+
   if fs == 'areaOpen':
     if cli.arg is None:
       cli.arg = 500
-    dt = tit.repeat(lambda: sp.areaOpen(imIn, int(cli.arg * px * px), imOut, se),
+    sz = int(cli.arg * px * px)
+    dt = tit.repeat(lambda: sp.areaOpen(imIn, sz, imOut, se),
                     number=nb,
                     repeat=repeat)
 
   if fs == 'areaThreshold':
     if cli.arg is None:
       cli.arg = 500
-    dt = tit.repeat(
-      lambda: sp.areaThreshold(imIn, int(cli.arg * px * px), imOut, True),
-      number=nb,
-      repeat=repeat)
+    sz = int(cli.arg * px * px)
+    dt = tit.repeat(lambda: sp.areaThreshold(imIn, sz, imOut, True),
+                    number=nb,
+                    repeat=repeat)
 
   if fs == 'distance':
     dt = tit.repeat(lambda: sp.distanceEuclidean(imIn, imOut),
@@ -270,7 +274,7 @@ def skTime(cli, fs, imIn, sz, nb, repeat, px=1):
     mask[tuple(coords.T)] = True
     markers, _ = ndi.label(mask)
     labels = watershed(-distance, markers, mask=imIn)
-  
+
   #
   #
   #
@@ -307,25 +311,28 @@ def skTime(cli, fs, imIn, sz, nb, repeat, px=1):
                     repeat=repeat)
 
   if fs == 'watershed':
-    dt = tit.repeat(lambda: binWatershed(imIn),
-                    number=nb,
-                    repeat=repeat)
+    if cli.binary:
+      dt = tit.repeat(lambda: binWatershed(imIn), number=nb, repeat=repeat)
+    else:
+      dt = []
 
   if fs == 'areaOpen':
     if cli.arg is None:
       cli.arg = 1000
-    dt = tit.repeat(lambda: skm.area_opening(
-      imIn, area_threshold=int(cli.arg * px * px), connectivity=1),
-                    number=nb,
-                    repeat=repeat)
+    sz = int(cli.arg * px * px)
+    dt = tit.repeat(
+      lambda: skm.area_opening(imIn, area_threshold=sz, connectivity=1),
+      number=nb,
+      repeat=repeat)
 
   if fs == 'areaThreshold':
     if cli.arg is None:
       cli.arg = 1000
-    dt = tit.repeat(lambda: skm.area_opening(
-      imIn, area_threshold=int(cli.arg * px * px), connectivity=1),
-                    number=nb,
-                    repeat=repeat)
+    sz = int(cli.arg * px * px)
+    dt = tit.repeat(
+      lambda: skm.area_opening(imIn, area_threshold=sz, connectivity=1),
+      number=nb,
+      repeat=repeat)
 
   if fs == 'distance':
     dt = tit.repeat(lambda: sci.distance_transform_edt(imIn),
@@ -391,7 +398,7 @@ def doSkImage(cli, fin=None, fs=None, szIm=[], szSE=[1], nb=10, repeat=7):
 #
 #
 def printSpeedUp(sz, msm, msk):
-  if len(msk) != len(sz) or len(msk) != len(msm):
+  if len(msk) != len(sz) or len(msk) != len(msm) or len(sz) == 0:
     return
   rkm = msk / msm
   rmk = msm / msk
@@ -513,10 +520,8 @@ def getCliArgs():
                       default=False,
                       help='Structuring Element Square (default is Cross)',
                       action='store_true')
-  
-  parser.add_argument('--arg',
-                      help='Generic argument',
-                      type=float)
+
+  parser.add_argument('--arg', help='Generic argument', type=float)
 
   sFuncs = ' | '.join(funcs)
   parser.add_argument('--function', default='erode', help=sFuncs, type=str)
