@@ -2,11 +2,13 @@
 
 Files=
 
-grayFiles="lena.png astronaut.png"
+grayFiles="lena.png astronaut.png hubble_EDF_gray bubbles_gray.png"
+
 grayFuncs="erode open hMaxima hMinima areaOpen"
 grayFuncs="erode open hMaxima hMinima"
 
 binFiles="cells.png gruyere.png alumine.png balls.png"
+
 binFuncs="erode open distance areaThreshold label"
 binFuncs="erode open distance label"
 

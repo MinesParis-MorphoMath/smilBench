@@ -318,7 +318,7 @@ def skTime(cli, fs, imIn, sz, nb, repeat, px=1):
 
   if fs == 'areaOpen':
     if cli.arg is None:
-      cli.arg = 1000
+      cli.arg = 500
     sz = int(cli.arg * px * px)
     dt = tit.repeat(
       lambda: skm.area_opening(imIn, area_threshold=sz, connectivity=1),
@@ -327,7 +327,7 @@ def skTime(cli, fs, imIn, sz, nb, repeat, px=1):
 
   if fs == 'areaThreshold':
     if cli.arg is None:
-      cli.arg = 1000
+      cli.arg = 500
     sz = int(cli.arg * px * px)
     dt = tit.repeat(
       lambda: skm.area_opening(imIn, area_threshold=sz, connectivity=1),
