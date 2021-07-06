@@ -144,7 +144,7 @@ def smilTime(cli, fs, imIn, sz, nb, repeat, px=1):
                     number=nb,
                     repeat=repeat)
 
-  if fs == 'binWatershed':
+  if fs == 'watershed':
     dt = tit.repeat(lambda: binWatershed(imIn, imOut),
                     number=nb,
                     repeat=repeat)
@@ -262,6 +262,7 @@ def skTime(cli, fs, imIn, sz, nb, repeat, px=1):
   #
   #
   def binWatershed(imIn):
+    imIn = imIn.astype(int)
     # https://scikit-image.org/docs/dev/auto_examples/segmentation/plot_watershed.html
     distance = ndi.distance_transform_edt(imIn)
     coords = peak_local_max(distance, footprint=np.ones((3, 3)), labels=imIn)
@@ -305,7 +306,7 @@ def skTime(cli, fs, imIn, sz, nb, repeat, px=1):
                     number=nb,
                     repeat=repeat)
 
-  if fs == 'binWatershed':
+  if fs == 'watershed':
     dt = tit.repeat(lambda: binWatershed(imIn),
                     number=nb,
                     repeat=repeat)
@@ -346,7 +347,7 @@ def doSkImage(cli, fin=None, fs=None, szIm=[], szSE=[1], nb=10, repeat=7):
 
   print("* skImage\n")
 
-  im = io.imread(fin)
+  im = io.imread(fin, as_gray=True)
   side = im.shape[0]
   sz = 1
 
@@ -464,10 +465,10 @@ def printSectionHeader(s=None):
 
 funcs = [
   'erode', 'open', 'hMaxima', 'hMinima', 'label', 'fastLabel', 'areaOpen',
-  'distance', 'areaThreshold', 'binWatershed'
+  'distance', 'areaThreshold', 'watershed'
 ]
 
-noStrEltCheck = ['areaOpen', 'distance', 'areaThreshold', 'binWatershed']
+noStrEltCheck = ['areaOpen', 'distance', 'areaThreshold', 'watershed']
 
 
 #
