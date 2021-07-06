@@ -23,56 +23,70 @@ imGray+=" bubbles_gray.png"
 imGray+=" hubble_EDF_gray.png"
 imGray+=" lena.png"
 
-#
-# Simple functions
-#
-for im in $imBin
-do
-  echo "Bin   : $im"
-  [ "$DOIT" == "yes" ] && bin/do-all.sh bin $im
-  [ -f stopnow ] && exit 1
-  [ "$DOIT" == "yes" ] && bin/do-install.sh
-done
-echo ""
+function doIt()
+{
+  echo "* Entering doIt : $*"
+  type=
+  funcs=
+  opts=
+  for arg in $*
+  do
+    case $arg in
+      bin|gray)
+        type=$arg
+        ;;
+      funcs=*)
+        funcs=$arg
+        ;;
+      nb=*)
+        opts+=" $arg"
+        ;;
+      *)
+        ;;
+    esac
+  done
 
-for im in $imGray
-do
-  echo "Gray  : $im"
-  [ "$DOIT" == "yes" ] && bin/do-all.sh gray $im
-  [ -f stopnow ] && exit 1
-  [ "$DOIT" == "yes" ] && bin/do-install.sh
-done
-echo ""
+  [ -z "$type" ] && return  
+  Imgs=
+  [ "$type" == "bin" ] && Imgs="$imBin"
+  [ "$type" == "gray" ] && Imgs="$imGray"
+  fn=generic
+  [ -n "$funcs" ] && fn=$(echo $funcs | awk -F= '{print $2}')
+  for im in $Imgs
+  do
+    [ -f stopnow ] && break
+    printf "  %-4s : %s\n" $type $im
+    flock=$(printf "%s-%s-%s.witness" $type $im $fn)
+    [ -f var/$flock ] && continue
+    [ "$DOIT" == "yes" ] && bin/do-all.sh bin $im "$funcs" "$opts"
+    if [ "$DOIT" == "yes" ]
+    then
+      bin/do-install.sh    
+      touch var/$flock
+    fi
+  done
+  echo ""
+}
 
-#
-# A little bit heavier
-#
-for im in $imBin
-do
-  echo "Bin   : $im"
-  [ "$DOIT" == "yes" ] && bin/do-all.sh bin funcs=watershed $im
-  [ -f stopnow ] && exit 1
-  [ "$DOIT" == "yes" ] && bin/do-install.sh
-done
-echo ""
+mkdir -p var
 
-for im in $imBin
-do
-  echo "Bin   : $im"
-  [ "$DOIT" == "yes" ] && bin/do-all.sh bin funcs=areaThreshold $im nb=5
-  [ -f stopnow ] && exit 1
-  [ "$DOIT" == "yes" ] && bin/do-install.sh
-done
-echo ""
+# default functions for binary images
+doIt bin
 
-#
-#
-#
-for im in $imGray
-do
-  echo "Gray  : $im"
-  [ "$DOIT" == "yes" ] && bin/do-all.sh gray $im funcs=areaOpen nb=5
-  [ -f stopnow ] && exit 1
-  [ "$DOIT" == "yes" ] && bin/do-install.sh
-done
-echo ""
+# default functions for gray images
+doIt gray
+
+# binary images : watershed
+doIt bin  funcs=watershed
+
+# binary images : areaThreshold
+doIt bin  funcs=areaThreshold
+
+# binary images : areaOpen
+doIt gray funcs=areaOpen nb=5
+
+# doIt gray funcs=hMaxima
+
+exit 0
+
+
