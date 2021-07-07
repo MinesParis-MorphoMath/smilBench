@@ -82,8 +82,9 @@ doIt bin  funcs=watershed
 # binary images : areaThreshold
 doIt bin  funcs=areaThreshold
 
-# binary images : areaOpen
+# slow functions
 doIt gray funcs=areaOpen nb=5
+doIt gray funcs=hMinima  nb=7
 
 # doIt gray funcs=hMaxima
 
