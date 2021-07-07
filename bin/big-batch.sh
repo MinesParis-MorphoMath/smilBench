@@ -58,7 +58,7 @@ function doIt()
     printf "  %-4s : %s\n" $type $im
     flock=$(printf "%s-%s-%s.witness" $type $im $fn)
     [ -f var/$flock ] && continue
-    [ "$DOIT" == "yes" ] && bin/do-all.sh bin $im "$funcs" "$opts"
+    [ "$DOIT" == "yes" ] && bin/do-all.sh $type $im "$funcs" "$opts"
     if [ "$DOIT" == "yes" ]
     then
       bin/do-install.sh    
