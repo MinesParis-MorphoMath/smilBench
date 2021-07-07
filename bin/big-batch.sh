@@ -80,7 +80,7 @@ doIt gray
 doIt bin  funcs=watershed nb=7
 
 # binary images : areaThreshold
-doIt bin  funcs=areaThreshold
+doIt bin  funcs=areaThreshold nb=5
 
 # slow functions
 doIt gray funcs=areaOpen nb=5
