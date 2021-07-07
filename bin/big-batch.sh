@@ -77,7 +77,7 @@ doIt bin
 doIt gray
 
 # binary images : watershed
-doIt bin  funcs=watershed
+doIt bin  funcs=watershed nb=7
 
 # binary images : areaThreshold
 doIt bin  funcs=areaThreshold
