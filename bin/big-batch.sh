@@ -83,8 +83,8 @@ doIt bin  funcs=watershed nb=7
 doIt bin  funcs=areaThreshold nb=5
 
 # slow functions
+doIt gray funcs=hMinima  nb=5
 doIt gray funcs=areaOpen nb=5
-doIt gray funcs=hMinima  nb=7
 
 # doIt gray funcs=hMaxima
 
