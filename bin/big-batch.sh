@@ -86,8 +86,8 @@ doIt bin  funcs=areaThreshold nb=5
 doIt gray funcs=hMinima  nb=5
 doIt gray funcs=areaOpen nb=5
 
-doit bin  funcs=thinning      nb=5
-doit bin  funcs=zhangSkeleton nb=5
+doIt bin  funcs=zhangSkeleton nb=5
+doIt bin  funcs=thinning      nb=5
 
 # doIt gray funcs=hMaxima
 
