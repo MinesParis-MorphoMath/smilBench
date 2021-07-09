@@ -64,7 +64,7 @@ import statistics as st
 
 
 def printHeader():
-  fmt = '{:4s} - {:>6s} {:2s} - {:>10s} {:>10s} {:>10s} {:>10s}'
+  fmt = '{:4s} - {:>6s} {:2s} - {:>11s} {:>11s} {:>11s} {:>11s}'
   s = fmt.format('', 'Side', 'SE', 'Mean', 'Std Dev', 'Min', 'Max')
   print(s)
   print('-' * len(s))
@@ -217,7 +217,7 @@ def doSmil(cli, fin=None, fs=None, szIm=[], szSE=[1], nb=10, repeat=7):
 
     for sz in szSE:
       dt = smilTime(cli, fs, imt, sz, nb, repeat, r)
-      fmt = '{:4.1f} - {:6.0f} {:2d} - {:10.3f} {:10.3f} {:10.3f} {:10.3f} - (ms)'
+      fmt = '{:4.1f} - {:6.0f} {:2d} - {:11.3f} {:11.3f} {:11.3f} {:11.3f} - (ms)'
       print(
         fmt.format(r, r * side, sz, dt.mean(), dt.std(), dt.min(), dt.max()))
       m.append(dt.mean())
@@ -394,7 +394,7 @@ def doSkImage(cli, fin=None, fs=None, szIm=[], szSE=[1], nb=10, repeat=7):
 
     for sz in szSE:
       dt = skTime(cli, fs, imt, sz, nb, repeat, r)
-      fmt = '{:4.1f} - {:6.0f} {:2d} - {:10.3f} {:10.3f} {:10.3f} {:10.3f} - (ms)'
+      fmt = '{:4.1f} - {:6.0f} {:2d} - {:11.3f} {:11.3f} {:11.3f} {:11.3f} - (ms)'
       print(
         fmt.format(r, r * side, sz, dt.mean(), dt.std(), dt.min(), dt.max()))
       m.append(dt.mean())
