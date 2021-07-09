@@ -46,7 +46,7 @@ function doIt()
     esac
   done
 
-  [ -z "$type" ] && return  
+  [ -z "$type" ] && return
   Imgs=
   [ "$type" == "bin" ] && Imgs="$imBin"
   [ "$type" == "gray" ] && Imgs="$imGray"
@@ -61,7 +61,7 @@ function doIt()
     [ "$DOIT" == "yes" ] && bin/do-all.sh $type $im "$funcs" "$opts"
     if [ "$DOIT" == "yes" ]
     then
-      bin/do-install.sh    
+      bin/do-install.sh
       touch var/$flock
     fi
   done
@@ -85,6 +85,9 @@ doIt bin  funcs=areaThreshold nb=5
 # slow functions
 doIt gray funcs=hMinima  nb=5
 doIt gray funcs=areaOpen nb=5
+
+doit bin  funcs=thinning      nb=5
+doit bin  funcs=zhangSkeleton nb=5
 
 # doIt gray funcs=hMaxima
 

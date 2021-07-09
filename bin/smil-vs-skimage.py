@@ -173,6 +173,16 @@ def smilTime(cli, fs, imIn, sz, nb, repeat, px=1):
                     number=nb,
                     repeat=repeat)
 
+  if fs == 'zhangSkeleton':
+    dt = tit.repeat(lambda: sp.zhangSkeleton(imIn, imOut),
+                    number=nb,
+                    repeat=repeat)
+
+  if fs == 'thinning':
+    dt = tit.repeat(lambda: sp.fullThin(imIn, sp.HMT_hL(6), imOut),
+                    number=nb,
+                    repeat=repeat)
+
   dt = np.array(dt)
   dt *= (1000. / nb)
 
@@ -339,6 +349,14 @@ def skTime(cli, fs, imIn, sz, nb, repeat, px=1):
                     number=nb,
                     repeat=repeat)
 
+  if fs == 'zhangSkeleton':
+    imIn = imIn.astype(bool)
+    dt = tit.repeat(lambda: skm.skeletonize(imIn), number=nb, repeat=repeat)
+
+  if fs == 'thinning':
+    imIn = imIn.astype(bool)
+    dt = tit.repeat(lambda: skm.thin(imIn), number=nb, repeat=repeat)
+
   dt = np.array(dt)
   dt *= (1000. / nb)
 
@@ -470,12 +488,29 @@ def printSectionHeader(s=None):
 #
 #
 
-funcs = [
+kFuncs = {
+  'erode': True,
+  'open': True,
+  'hMaxima': True,
+  'hMinima': True,
+  'label': True,
+  'fastLabel': True,
+  'areaOpen': False,
+  'distance': False,
+  'areaThreshold': False,
+  'watershed': False,
+  'zhangSkeleton': False,
+  'thinning': False
+}
+
+Xfuncs = [
   'erode', 'open', 'hMaxima', 'hMinima', 'label', 'fastLabel', 'areaOpen',
-  'distance', 'areaThreshold', 'watershed'
+  'distance', 'areaThreshold', 'watershed', 'zhangSkeleton', 'skeleton'
 ]
 
-noStrEltCheck = ['areaOpen', 'distance', 'areaThreshold', 'watershed']
+XnoStrEltCheck = [
+  'areaOpen', 'distance', 'areaThreshold', 'watershed', 'zhangSkeleton'
+]
 
 
 #
@@ -523,14 +558,11 @@ def getCliArgs():
 
   parser.add_argument('--arg', help='Generic argument', type=float)
 
-  sFuncs = ' | '.join(funcs)
+  sFuncs = ' | '.join(kFuncs.keys())
   parser.add_argument('--function', default='erode', help=sFuncs, type=str)
   cli = parser.parse_args()
 
-  if cli.function in funcs:
-    idx = funcs.index(cli.function)
-    cli.fSel = idx
-  else:
+  if not cli.function in kFuncs:
     print("Not found : {:s}".format(cli.function))
     exit(1)
 
@@ -560,12 +592,10 @@ cli = getCliArgs()
 
 nb = 20
 repeat = 7
-fSel = 3
 
 fin = cli.fname
 nb = cli.nb
 repeat = cli.repeat
-fSel = cli.fSel
 funcName = cli.function
 
 imPath = os.path.join('images', fin)
@@ -636,7 +666,8 @@ printElapsed(ti, tf)
 msm = []
 msk = []
 
-if not cli.function in noStrEltCheck:
+#if not cli.function in noStrEltCheck:
+if kFuncs[cli.function]:
   printSectionHeader("Structuring element size")
   ti = time.time()
   msm = doSmil(cli, imPath, cli.function, [1], seSizes, nb=nb, repeat=repeat)
