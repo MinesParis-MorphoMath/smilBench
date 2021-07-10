@@ -40,6 +40,7 @@ import timeit as tit
 from datetime import datetime, timezone
 
 import argparse as ap
+import configparser as cp
 
 import smilPython as sp
 
@@ -58,7 +59,7 @@ import numpy as np
 
 import statistics as st
 
-#
+# -----------------------------------------------------------------------------
 #
 #
 
@@ -189,7 +190,7 @@ def smilTime(cli, fs, imIn, sz, nb, repeat, px=1):
   return dt
 
 
-#
+# -----------------------------------------------------------------------------
 #
 #
 def doSmil(cli, fin=None, fs=None, szIm=[], szSE=[1], nb=10, repeat=7):
@@ -235,7 +236,7 @@ def doSmil(cli, fin=None, fs=None, szIm=[], szSE=[1], nb=10, repeat=7):
 #
 
 
-#
+# -----------------------------------------------------------------------------
 # Structuring elements
 #
 def mkSquareSE(sz=1, D3=False):
@@ -249,7 +250,9 @@ def mkSquareSE(sz=1, D3=False):
 
   return se
 
-
+# -----------------------------------------------------------------------------
+#
+#
 def mkCrossSE(sz=1, D3=False):
   dim = 2 * sz + 1
   if D3:
@@ -267,7 +270,7 @@ def mkCrossSE(sz=1, D3=False):
   return se
 
 
-#
+# -----------------------------------------------------------------------------
 #
 #
 def skTime(cli, fs, imIn, sz, nb, repeat, px=1):
@@ -284,6 +287,15 @@ def skTime(cli, fs, imIn, sz, nb, repeat, px=1):
     mask[tuple(coords.T)] = True
     markers, _ = ndi.label(mask)
     labels = watershed(-distance, markers, mask=imIn)
+    return labels
+
+  #
+  #
+  #
+  def skAreaThreshold(imIn, sz):
+    imb = skm.label(imIn)
+    imOut = skm.remove_small_objects(imb, sz)
+    return imOut
 
   #
   #
@@ -340,7 +352,7 @@ def skTime(cli, fs, imIn, sz, nb, repeat, px=1):
       cli.arg = 500
     sz = int(cli.arg * px * px)
     dt = tit.repeat(
-      lambda: skm.area_opening(imIn, area_threshold=sz, connectivity=1),
+      lambda: skAreaThreshold(imIn, sz=sz),
       number=nb,
       repeat=repeat)
 
@@ -363,7 +375,7 @@ def skTime(cli, fs, imIn, sz, nb, repeat, px=1):
   return dt
 
 
-#
+# -----------------------------------------------------------------------------
 #
 #
 def doSkImage(cli, fin=None, fs=None, szIm=[], szSE=[1], nb=10, repeat=7):
@@ -412,7 +424,7 @@ def doSkImage(cli, fin=None, fs=None, szIm=[], szSE=[1], nb=10, repeat=7):
 #
 
 
-#
+# -----------------------------------------------------------------------------
 #
 #
 def printSpeedUp(sz, msm, msk):
@@ -436,7 +448,7 @@ def printSpeedUp(sz, msm, msk):
   print("\n  - [*] : ratio and log10(ratio) in columns")
 
 
-#
+# -----------------------------------------------------------------------------
 #
 #
 def saveResults(cli, sz, tSm, tSk, fName=None, suffix="szim"):
@@ -463,7 +475,7 @@ def saveResults(cli, sz, tSm, tSk, fName=None, suffix="szim"):
       fout.write(s)
 
 
-#
+# -----------------------------------------------------------------------------
 #
 #
 def printElapsed(ti, tf):
@@ -471,7 +483,7 @@ def printElapsed(ti, tf):
   print('* Elapsed time : {:.1f} s'.format(float(tf - ti)))
 
 
-#
+# -----------------------------------------------------------------------------
 #
 #
 def printSectionHeader(s=None):
@@ -503,17 +515,27 @@ kFuncs = {
   'thinning': False
 }
 
-Xfuncs = [
-  'erode', 'open', 'hMaxima', 'hMinima', 'label', 'fastLabel', 'areaOpen',
-  'distance', 'areaThreshold', 'watershed', 'zhangSkeleton', 'skeleton'
-]
-
-XnoStrEltCheck = [
-  'areaOpen', 'distance', 'areaThreshold', 'watershed', 'zhangSkeleton'
-]
-
-
+# -----------------------------------------------------------------------------
 #
+#
+def appLoadFileConfig(fconfig=None):
+  if fconfig is None:
+    return None
+
+  if not os.path.isfile(fconfig):
+    return None
+
+  config = cp.ConfigParser(interpolation=cp.ExtendedInterpolation(),
+                           default_section="default")
+
+  config.BOOLEAN_STATES['Vrai'] = True
+  config.BOOLEAN_STATES['Faux'] = False
+
+  config.read(fconfig)
+
+  return config
+
+# -----------------------------------------------------------------------------
 #
 #
 def getCliArgs():
@@ -572,8 +594,56 @@ def getCliArgs():
 
   return cli
 
-
+# -----------------------------------------------------------------------------
 #
+#
+def appSaveFileConfig(config=None, fconfig=None):
+  if config is None or fconfig is None:
+    return False
+  with open(fconfig, "w") as cf:
+    config.write(cf)
+
+# -----------------------------------------------------------------------------
+#
+#
+def getAppConfig(argv, CAppl = None):
+  if CAppl is None:
+    CAppl = {}
+  CAppl['cli'] = getCliArgs(argv)
+  CAppl['config'] = appLoadFileConfig("etc/bench.ini")
+  CAppl['section'] = 'default'
+
+  section = CAppl['section']
+  #cli = CAppl['cli']
+  #config = CAppl['config']
+
+  appSaveFileConfig(CAppl['config'], "tmp/covid.ini")
+
+  # copy cli to conf
+  for k in CAppl['cli'].keys():
+    if not CAppl['cli'][k] is None:
+      CAppl['config'][section][k] = str(CAppl['cli'][k])
+
+  return CAppl
+
+# -----------------------------------------------------------------------------
+#
+#
+def XgetConfigValues(argv):
+  cli = getCliArgs(argv)
+  config = appLoadFileConfig("etc/covid.ini")
+
+  for k in cli.keys():
+    if not cli[k] is None:
+      config["default"][k] = str(cli[k])
+
+  #if config["default"]['debug']:
+  #  showConfig(config)
+  appSaveFileConfig(config, "tmp/covid.ini")
+
+  return config
+
+# -----------------------------------------------------------------------------
 #
 #
 def getImageSizes(fin):
@@ -585,7 +655,7 @@ def getImageSizes(fin):
   return width, height, depth, isBin
 
 
-#
+# -----------------------------------------------------------------------------
 #
 #
 cli = getCliArgs()
@@ -666,7 +736,6 @@ printElapsed(ti, tf)
 msm = []
 msk = []
 
-#if not cli.function in noStrEltCheck:
 if kFuncs[cli.function]:
   printSectionHeader("Structuring element size")
   ti = time.time()
