@@ -87,7 +87,7 @@ doIt gray funcs=hMinima  nb=5
 doIt gray funcs=areaOpen nb=5
 
 doIt bin  funcs=zhangSkeleton nb=5
-doIt bin  funcs=thinning      nb=2
+doIt bin  funcs=thinning      nb=2 repeat=2
 
 # doIt gray funcs=hMaxima
 
