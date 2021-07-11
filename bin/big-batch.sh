@@ -38,7 +38,7 @@ function doIt()
       funcs=*)
         funcs=$arg
         ;;
-      nb=*)
+      nb=*|repeat=*)
         opts+=" $arg"
         ;;
       *)
@@ -88,8 +88,6 @@ doIt gray funcs=areaOpen nb=5
 
 doIt bin  funcs=zhangSkeleton nb=5
 doIt bin  funcs=thinning      nb=2 repeat=2
-
-# doIt gray funcs=hMaxima
 
 exit 0
 
