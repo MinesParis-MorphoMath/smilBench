@@ -92,6 +92,13 @@ def printHeader():
 #
 def smilTime(cli, fs, imIn, sz, nb, repeat, px=1):
 
+  wsData = {
+    'astronaut.png' : [10,2],
+    'bubbles_gray': [10,5],
+    'hubble_EDF_gray.png' : [5,1],
+    'lena.png' : [5,0],
+    }
+
   #
   #
   #
@@ -114,14 +121,29 @@ def smilTime(cli, fs, imIn, sz, nb, repeat, px=1):
   #
   #
   #
-  def grayWatershed(imIn, imOut):
-    se = sp.CrossSE()
-    sp.inv(imIn, imIn)
-    imMin = sp.Image(imIn)
-    sp.hMinima(imIn, 40, imMin, se)
-    imLabel = sp.Image(imIn, 'UINT16')
-    sp.label(imMin, imLabel)
-    sp.watershed(imIn, imLabel, imOut, se)
+  def grayWatershed(imIn, imOut, h = 5, sz = 0):
+        se = sp.HexSE()
+        imOpen = sp.Image(imIn)
+        if sz > 0:
+          sp.open(imIn, imOpen, sp.HexSE(sz))
+        else:
+          sp.copy(imIn, imOpen)
+        imGrad = sp.Image(imIn)
+        imMin  = sp.Image(imIn)
+        sp.gradient(imOpen, imGrad, se)
+        sp.hMinima(imGrad, h, imMin, se)
+        imLabel = sp.Image(imOpen, 'UINT16')
+        sp.label(imMin, imLabel)
+        sp.watershed(imGrad, imLabel, imOut, se)
+
+
+    #se = sp.CrossSE()
+    #sp.inv(imIn, imIn)
+    #imMin = sp.Image(imIn)
+    #sp.hMinima(imIn, 40, imMin, se)
+    #imLabel = sp.Image(imIn, 'UINT16')
+    #sp.label(imMin, imLabel)
+    #sp.watershed(imIn, imLabel, imOut, se)
 
   #
   #
@@ -171,7 +193,8 @@ def smilTime(cli, fs, imIn, sz, nb, repeat, px=1):
                       number=nb,
                       repeat=repeat)
     else:
-      dt = tit.repeat(lambda: grayWatershed(imIn, imOut),
+      h, sz = wsData[cli.fname]
+      dt = tit.repeat(lambda: grayWatershed(imIn, imOut, h,  sz),
                       number=nb,
                       repeat=repeat)
 
@@ -297,6 +320,12 @@ def mkCrossSE(sz=1, D3=False):
 #
 def skTime(cli, fs, imIn, sz, nb, repeat, px=1):
 
+  wsData = {
+    'astronaut.png' : [4, 0],
+    'bubbles_gray': [3, 0],
+    'hubble_EDF_gray.png' : [1, 0],
+    'lena.png' : [2, 0],
+    }
   #
   #
   #
@@ -311,14 +340,14 @@ def skTime(cli, fs, imIn, sz, nb, repeat, px=1):
     labels = watershed(-distance, markers, mask=mask)
     return labels
 
-  def grayWatershed(imIn):
+  def grayWatershed(imIn, sz):
     imIn = imIn.astype('uint8')
     # denoise image
     denoised = rank.median(imIn, skm.disk(2))
     # find continuous region (low gradient -
     # where less than 10 for this image) --> markers
     # disk(5) is used here to get a more smooth image
-    markers = rank.gradient(denoised, skm.disk(3)) < 10
+    markers = rank.gradient(denoised, skm.disk(sz)) < 10
     markers = ndi.label(markers)[0]
     # local gradient (disk(2) is used to keep edges thin)
     gradient = rank.gradient(denoised, skm.disk(2))
@@ -372,7 +401,8 @@ def skTime(cli, fs, imIn, sz, nb, repeat, px=1):
     if cli.binary:
       dt = tit.repeat(lambda: binWatershed(imIn), number=nb, repeat=repeat)
     else:
-      dt = tit.repeat(lambda: grayWatershed(imIn), number=nb, repeat=repeat)
+      sz, _ = wsData[cli.fname]
+      dt = tit.repeat(lambda: grayWatershed(imIn, sz), number=nb, repeat=repeat)
 
   if fs == 'areaOpen':
     if cli.arg is None:
