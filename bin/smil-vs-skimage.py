@@ -322,7 +322,7 @@ def skTime(cli, fs, imIn, sz, nb, repeat, px=1):
 
   wsData = {
     'astronaut.png' : [4, 0],
-    'bubbles_gray': [3, 0],
+    'bubbles_gray.png': [3, 0],
     'hubble_EDF_gray.png' : [1, 0],
     'lena.png' : [2, 0],
     }
