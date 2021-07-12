@@ -54,6 +54,7 @@ from scipy import ndimage as ndi
 
 from skimage.segmentation import watershed
 from skimage.feature import peak_local_max
+from skimage.filters import rank
 
 import numpy as np
 
@@ -94,14 +95,33 @@ def smilTime(cli, fs, imIn, sz, nb, repeat, px=1):
   #
   #
   #
-  def binWatershed(imIn, imOut):
+  def binWatershed(imIn, imOut, onlyWS = False):
+    dt = []
     se = sp.HexSE()
     imDist = sp.Image(imIn)
     sp.distance(imIn, imDist)
     sp.inv(imDist, imDist)
-    sp.watershed(imDist, imOut, se)
+    if onlyWS:
+      dt = tit.repeat(lambda: sp.watershed(imDist, imOut, se),
+                      number=nb,
+                      repeat=repeat)
+    else:
+      sp.watershed(imDist, imOut, se)
     sp.inv(imOut, imOut)
     sp.inf(imIn, imOut, imOut)
+    return dt
+
+  #
+  #
+  #
+  def grayWatershed(imIn, imOut):
+    se = sp.CrossSE()
+    sp.inv(imIn, imIn)
+    imMin = sp.Image(imIn)
+    sp.hMinima(imIn, 40, imMin, se)
+    imLabel = sp.Image(imIn, 'UINT16')
+    sp.label(imMin, imLabel)
+    sp.watershed(imIn, imLabel, imOut, se)
 
   #
   #
@@ -151,7 +171,9 @@ def smilTime(cli, fs, imIn, sz, nb, repeat, px=1):
                       number=nb,
                       repeat=repeat)
     else:
-      dt = []
+      dt = tit.repeat(lambda: grayWatershed(imIn, imOut),
+                      number=nb,
+                      repeat=repeat)
 
   if fs == 'areaOpen':
     if cli.arg is None:
@@ -286,8 +308,22 @@ def skTime(cli, fs, imIn, sz, nb, repeat, px=1):
     mask = np.zeros(distance.shape, dtype=bool)
     mask[tuple(coords.T)] = True
     markers, _ = ndi.label(mask)
-    labels = watershed(-distance, markers, mask=imIn)
+    labels = watershed(-distance, markers, mask=mask)
     return labels
+
+  def grayWatershed(imIn):
+    imIn = imIn.astype('uint8')
+    # denoise image
+    denoised = rank.median(imIn, skm.disk(2))
+    # find continuous region (low gradient -
+    # where less than 10 for this image) --> markers
+    # disk(5) is used here to get a more smooth image
+    markers = rank.gradient(denoised, skm.disk(3)) < 10
+    markers = ndi.label(markers)[0]
+    # local gradient (disk(2) is used to keep edges thin)
+    gradient = rank.gradient(denoised, skm.disk(2))
+    # process the watershed
+    labels = watershed(gradient, markers)
 
   #
   #
@@ -336,7 +372,7 @@ def skTime(cli, fs, imIn, sz, nb, repeat, px=1):
     if cli.binary:
       dt = tit.repeat(lambda: binWatershed(imIn), number=nb, repeat=repeat)
     else:
-      dt = []
+      dt = tit.repeat(lambda: grayWatershed(imIn), number=nb, repeat=repeat)
 
   if fs == 'areaOpen':
     if cli.arg is None:
@@ -511,6 +547,7 @@ kFuncs = {
   'distance': False,
   'areaThreshold': False,
   'watershed': False,
+  'watershedOnly':False,
   'zhangSkeleton': False,
   'thinning': False
 }
@@ -541,7 +578,7 @@ def appLoadFileConfig(fconfig=None):
 def getCliArgs():
   parser = ap.ArgumentParser()
   parser.add_argument('--fname',
-                      default='lena.png',
+                      default='notfound.png',
                       help='Image file',
                       type=str)
 
