@@ -94,7 +94,7 @@ def smilTime(cli, fs, imIn, sz, nb, repeat, px=1):
 
   wsData = {
     'astronaut.png' : [10,0],
-    'bubbles_gray': [10,5],
+    'bubbles_gray.png': [10,5],
     'hubble_EDF_gray.png' : [5,1],
     'lena.png' : [5,0],
     }
@@ -343,7 +343,7 @@ def skTime(cli, fs, imIn, sz, nb, repeat, px=1):
   def grayWatershed(imIn, szg, szo):
     imIn = imIn.astype('uint8')
     # denoise image
-    denoised = rank.median(imIn, skm.disk(sgo))
+    denoised = rank.median(imIn, skm.disk(szo))
     # find continuous region (low gradient -
     # where less than 10 for this image) --> markers
     # disk(5) is used here to get a more smooth image
