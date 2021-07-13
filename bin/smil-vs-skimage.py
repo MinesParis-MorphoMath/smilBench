@@ -93,7 +93,7 @@ def printHeader():
 def smilTime(cli, fs, imIn, sz, nb, repeat, px=1):
 
   wsData = {
-    'astronaut.png' : [10,2],
+    'astronaut.png' : [10,0],
     'bubbles_gray': [10,5],
     'hubble_EDF_gray.png' : [5,1],
     'lena.png' : [5,0],
@@ -321,10 +321,10 @@ def mkCrossSE(sz=1, D3=False):
 def skTime(cli, fs, imIn, sz, nb, repeat, px=1):
 
   wsData = {
-    'astronaut.png' : [4, 0],
-    'bubbles_gray.png': [3, 0],
-    'hubble_EDF_gray.png' : [1, 0],
-    'lena.png' : [2, 0],
+    'astronaut.png' : [2, 5],
+    'bubbles_gray.png': [1, 3],
+    'hubble_EDF_gray.png' : [1, 2],
+    'lena.png' : [3, 5],
     }
   #
   #
@@ -340,14 +340,14 @@ def skTime(cli, fs, imIn, sz, nb, repeat, px=1):
     labels = watershed(-distance, markers, mask=mask)
     return labels
 
-  def grayWatershed(imIn, sz):
+  def grayWatershed(imIn, szg, szo):
     imIn = imIn.astype('uint8')
     # denoise image
-    denoised = rank.median(imIn, skm.disk(2))
+    denoised = rank.median(imIn, skm.disk(sgo))
     # find continuous region (low gradient -
     # where less than 10 for this image) --> markers
     # disk(5) is used here to get a more smooth image
-    markers = rank.gradient(denoised, skm.disk(sz)) < 10
+    markers = rank.gradient(denoised, skm.disk(szg)) < 10
     markers = ndi.label(markers)[0]
     # local gradient (disk(2) is used to keep edges thin)
     gradient = rank.gradient(denoised, skm.disk(2))
@@ -401,8 +401,10 @@ def skTime(cli, fs, imIn, sz, nb, repeat, px=1):
     if cli.binary:
       dt = tit.repeat(lambda: binWatershed(imIn), number=nb, repeat=repeat)
     else:
-      sz, _ = wsData[cli.fname]
-      dt = tit.repeat(lambda: grayWatershed(imIn, sz), number=nb, repeat=repeat)
+      szg, szo = wsData[cli.fname]
+      dt = tit.repeat(lambda: grayWatershed(imIn, szg, szo),
+                      number=nb,
+                      repeat=repeat)
 
   if fs == 'areaOpen':
     if cli.arg is None:
