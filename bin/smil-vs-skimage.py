@@ -165,6 +165,9 @@ def smilTime(cli, fs, imIn, sz, nb, repeat, px=1):
   if fs == 'open':
     dt = tit.repeat(lambda: sp.open(imIn, imOut, se), number=nb, repeat=repeat)
 
+  if fs == 'tophat':
+    dt = tit.repeat(lambda: sp.topHat(imIn, imOut, se), number=nb, repeat=repeat)
+
   if fs == 'hMaxima':
     dt = tit.repeat(lambda: sp.hMaxima(imIn, 10, imOut, se),
                     number=nb,
@@ -377,6 +380,9 @@ def skTime(cli, fs, imIn, sz, nb, repeat, px=1):
   if fs == 'open':
     dt = tit.repeat(lambda: skm.opening(imIn, se), number=nb, repeat=repeat)
 
+  if fs == 'tophat':
+    dt = tit.repeat(lambda: skm.white_tophat(imIn, se), number=nb, repeat=repeat)
+
   if fs == 'hMaxima':
     dt = tit.repeat(lambda: skm.h_maxima(imIn, 10, se),
                     number=nb,
@@ -571,10 +577,10 @@ def printSectionHeader(s=None):
 kFuncs = {
   'erode': True,
   'open': True,
+  'tophat': True,
   'hMaxima': True,
   'hMinima': True,
-  'label': True,
-  'fastLabel': True,
+  'label': False,
   'areaOpen': False,
   'distance': False,
   'areaThreshold': False,
