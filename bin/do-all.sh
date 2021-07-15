@@ -55,6 +55,12 @@ do
     repeat=*)
       Repeat=$(echo $arg | awk -F= '{print $2}' | sed -e "s/,/ /g")
       ;;
+    --*=*)
+      Opt+=" $arg"
+      ;;
+    --*)
+      Opt+=" $arg"
+      ;;
     *)
       [ -f images/$arg ] && Files="$arg"
       ;;

@@ -75,9 +75,10 @@ doIt bin
 
 # default functions for gray images
 doIt gray
+doIt gray tophat
 
 # watershed
-doIt gray funcs=watershed 
+doIt gray funcs=watershed
 doIt bin  funcs=watershed nb=7
 
 # binary images : areaThreshold
