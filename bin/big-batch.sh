@@ -22,6 +22,7 @@ imGray+=" astronaut.png"
 imGray+=" bubbles_gray.png"
 imGray+=" hubble_EDF_gray.png"
 imGray+=" lena.png"
+imGray+=" tools.png"
 
 function doIt()
 {

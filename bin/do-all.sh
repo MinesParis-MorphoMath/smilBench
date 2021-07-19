@@ -2,7 +2,7 @@
 
 Files=
 
-grayFiles="lena.png astronaut.png hubble_EDF_gray bubbles_gray.png"
+grayFiles="tools.png lena.png astronaut.png hubble_EDF_gray bubbles_gray.png"
 
 grayFuncs="erode open hMaxima hMinima areaOpen"
 grayFuncs="erode open hMinima"
