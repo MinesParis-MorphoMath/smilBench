@@ -329,6 +329,7 @@ def skTime(cli, fs, imIn, sz, nb, repeat, px=1):
     'bubbles_gray.png': [1, 3],
     'hubble_EDF_gray.png' : [1, 2],
     'lena.png' : [3, 5],
+    'tools.png' : [1, 3],
     }
   #
   #
