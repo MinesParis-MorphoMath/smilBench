@@ -97,6 +97,7 @@ def smilTime(cli, fs, imIn, sz, nb, repeat, px=1):
     'bubbles_gray.png': [10,5],
     'hubble_EDF_gray.png' : [5,1],
     'lena.png' : [5,0],
+    'tools.png': [10,1],
     }
 
   #
