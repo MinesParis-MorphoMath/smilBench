@@ -80,7 +80,7 @@ doIt gray funcs=tophat
 
 # watershed
 doIt gray funcs=watershed
-doIt bin  funcs=watershed nb=7
+doIt bin  funcs=watershed
 
 # binary images : areaThreshold
 doIt bin  funcs=areaThreshold
