@@ -72,14 +72,14 @@ function doIt()
 mkdir -p var
 
 # default functions for binary images
-doIt bin funcs=erode
-doIt bin funcs=open
-doIt bin funcs=label
+doIt bin funcs=erode nb=20 repeat=5
+doIt bin funcs=open  nb=20 repeat=5
+doIt bin funcs=label nb=20 repeat=5
 #doIt bin funcs=distance
 
 # default functions for gray images
-doIt gray
-doIt gray funcs=tophat
+doIt gray nb=20 repeat=5
+doIt gray funcs=tophat nb=20 repeat=5
 
 # watershed
 doIt gray funcs=watershed
