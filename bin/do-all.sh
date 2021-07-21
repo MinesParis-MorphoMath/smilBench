@@ -12,6 +12,7 @@ binFiles="cells.png gruyere.png alumine.png balls.png"
 
 binFuncs="erode open distance areaThreshold label"
 binFuncs="erode open distance label"
+binFuncs="erode open label"
 
 Prefix=gray
 Files="$grayFiles"
