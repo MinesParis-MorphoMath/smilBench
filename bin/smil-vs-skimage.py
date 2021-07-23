@@ -93,17 +93,17 @@ def printHeader():
 def smilTime(cli, fs, imIn, sz, nb, repeat, px=1):
 
   wsData = {
-    'astronaut.png' : [10,0],
-    'bubbles_gray.png': [10,5],
-    'hubble_EDF_gray.png' : [5,1],
-    'lena.png' : [5,0],
-    'tools.png': [10,1],
-    }
+    'astronaut.png': [10, 0],
+    'bubbles_gray.png': [10, 5],
+    'hubble_EDF_gray.png': [5, 1],
+    'lena.png': [5, 0],
+    'tools.png': [10, 1],
+  }
 
   #
   #
   #
-  def binWatershed(imIn, imOut, onlyWS = False):
+  def binWatershed(imIn, imOut, onlyWS=False):
     dt = []
     se = sp.HexSE()
     imDist = sp.Image(imIn)
@@ -122,29 +122,28 @@ def smilTime(cli, fs, imIn, sz, nb, repeat, px=1):
   #
   #
   #
-  def grayWatershed(imIn, imOut, h = 5, sz = 0):
-        se = sp.HexSE()
-        imOpen = sp.Image(imIn)
-        if sz > 0:
-          sp.open(imIn, imOpen, sp.HexSE(sz))
-        else:
-          sp.copy(imIn, imOpen)
-        imGrad = sp.Image(imIn)
-        imMin  = sp.Image(imIn)
-        sp.gradient(imOpen, imGrad, se)
-        sp.hMinima(imGrad, h, imMin, se)
-        imLabel = sp.Image(imOpen, 'UINT16')
-        sp.label(imMin, imLabel)
-        sp.watershed(imGrad, imLabel, imOut, se)
+  def grayWatershed(imIn, imOut, h=5, sz=0):
+    se = sp.HexSE()
+    imOpen = sp.Image(imIn)
+    if sz > 0:
+      sp.open(imIn, imOpen, sp.HexSE(sz))
+    else:
+      sp.copy(imIn, imOpen)
+    imGrad = sp.Image(imIn)
+    imMin = sp.Image(imIn)
+    sp.gradient(imOpen, imGrad, se)
+    sp.hMinima(imGrad, h, imMin, se)
+    imLabel = sp.Image(imOpen, 'UINT16')
+    sp.label(imMin, imLabel)
+    sp.watershed(imGrad, imLabel, imOut, se)
 
-
-    #se = sp.CrossSE()
-    #sp.inv(imIn, imIn)
-    #imMin = sp.Image(imIn)
-    #sp.hMinima(imIn, 40, imMin, se)
-    #imLabel = sp.Image(imIn, 'UINT16')
-    #sp.label(imMin, imLabel)
-    #sp.watershed(imIn, imLabel, imOut, se)
+  #se = sp.CrossSE()
+  #sp.inv(imIn, imIn)
+  #imMin = sp.Image(imIn)
+  #sp.hMinima(imIn, 40, imMin, se)
+  #imLabel = sp.Image(imIn, 'UINT16')
+  #sp.label(imMin, imLabel)
+  #sp.watershed(imIn, imLabel, imOut, se)
 
   #
   #
@@ -167,7 +166,9 @@ def smilTime(cli, fs, imIn, sz, nb, repeat, px=1):
     dt = tit.repeat(lambda: sp.open(imIn, imOut, se), number=nb, repeat=repeat)
 
   if fs == 'tophat':
-    dt = tit.repeat(lambda: sp.topHat(imIn, imOut, se), number=nb, repeat=repeat)
+    dt = tit.repeat(lambda: sp.topHat(imIn, imOut, se),
+                    number=nb,
+                    repeat=repeat)
 
   if fs == 'hMaxima':
     dt = tit.repeat(lambda: sp.hMaxima(imIn, 10, imOut, se),
@@ -198,7 +199,7 @@ def smilTime(cli, fs, imIn, sz, nb, repeat, px=1):
                       repeat=repeat)
     else:
       h, sz = wsData[cli.fname]
-      dt = tit.repeat(lambda: grayWatershed(imIn, imOut, h,  sz),
+      dt = tit.repeat(lambda: grayWatershed(imIn, imOut, h, sz),
                       number=nb,
                       repeat=repeat)
 
@@ -254,6 +255,7 @@ def doSmil(cli, fin=None, fs=None, szIm=[], szSE=[1], nb=10, repeat=7):
   imt = sp.Image(im)
 
   m = []
+  npm = np.array(())
   printHeader()
   for r in szIm:
     if r != 1.:
@@ -270,10 +272,12 @@ def doSmil(cli, fin=None, fs=None, szIm=[], szSE=[1], nb=10, repeat=7):
       fmt = '{:4.1f} - {:6.0f} {:2d} - {:11.3f} {:11.3f} {:11.3f} {:11.3f} - (ms)'
       print(
         fmt.format(r, r * side, sz, dt.mean(), dt.std(), dt.min(), dt.max()))
-      #m.append([dt.mean(), dt.std(), dt.min(), dt.max()])
+
       m.append(dt.min())
+      npm = np.append(npm, [dt.mean(), dt.std(), dt.min(), dt.max()])
   print()
-  return np.array(m)
+  npm = npm.reshape((npm.shape[0] // 4, 4))
+  return np.array(m), npm
 
 
 #
@@ -299,6 +303,7 @@ def mkSquareSE(sz=1, D3=False):
     se[:, :] = 1
 
   return se
+
 
 # -----------------------------------------------------------------------------
 #
@@ -326,12 +331,13 @@ def mkCrossSE(sz=1, D3=False):
 def skTime(cli, fs, imIn, sz, nb, repeat, px=1):
 
   wsData = {
-    'astronaut.png' : [2, 5],
+    'astronaut.png': [2, 5],
     'bubbles_gray.png': [1, 3],
-    'hubble_EDF_gray.png' : [1, 2],
-    'lena.png' : [3, 5],
-    'tools.png' : [1, 3],
-    }
+    'hubble_EDF_gray.png': [1, 2],
+    'lena.png': [3, 5],
+    'tools.png': [1, 3],
+  }
+
   #
   #
   #
@@ -384,7 +390,9 @@ def skTime(cli, fs, imIn, sz, nb, repeat, px=1):
     dt = tit.repeat(lambda: skm.opening(imIn, se), number=nb, repeat=repeat)
 
   if fs == 'tophat':
-    dt = tit.repeat(lambda: skm.white_tophat(imIn, se), number=nb, repeat=repeat)
+    dt = tit.repeat(lambda: skm.white_tophat(imIn, se),
+                    number=nb,
+                    repeat=repeat)
 
   if fs == 'hMaxima':
     dt = tit.repeat(lambda: skm.h_maxima(imIn, 10, se),
@@ -428,10 +436,9 @@ def skTime(cli, fs, imIn, sz, nb, repeat, px=1):
     if cli.arg is None:
       cli.arg = 500
     sz = int(cli.arg * px * px)
-    dt = tit.repeat(
-      lambda: skAreaThreshold(imIn, sz=sz),
-      number=nb,
-      repeat=repeat)
+    dt = tit.repeat(lambda: skAreaThreshold(imIn, sz=sz),
+                    number=nb,
+                    repeat=repeat)
 
   if fs == 'distance':
     dt = tit.repeat(lambda: sci.distance_transform_edt(imIn),
@@ -466,6 +473,7 @@ def doSkImage(cli, fin=None, fs=None, szIm=[], szSE=[1], nb=10, repeat=7):
   sz = 1
 
   m = []
+  npm = np.array(())
   printHeader()
   for r in szIm:
     if r != 1:
@@ -488,8 +496,11 @@ def doSkImage(cli, fin=None, fs=None, szIm=[], szSE=[1], nb=10, repeat=7):
         fmt.format(r, r * side, sz, dt.mean(), dt.std(), dt.min(), dt.max()))
       #m.append([dt.mean(), dt.std(), dt.min(), dt.max()])
       m.append(dt.min())
+      npm = np.append(npm, [dt.mean(), dt.std(), dt.min(), dt.max()])
+
   print()
-  return np.array(m)
+  npm = npm.reshape((npm.shape[0] // 4, 4))
+  return np.array(m), npm
 
 
 #
@@ -556,6 +567,44 @@ def saveResults(cli, sz, tSm, tSk, fName=None, suffix="szim"):
 # -----------------------------------------------------------------------------
 #
 #
+def saveResultsNew(cli, sz, vSm, vSk, fName=None, suffix="szim"):
+  if vSm.shape[0] != len(sz) or vSk.shape[0] != len(sz):
+    return
+  # fname = gray|bin + image + function + szse|seim
+  if fName is None:
+    if cli.binary:
+      fName = "New-bin"
+    else:
+      fName = "New-gray"
+    b, x = os.path.splitext(cli.fname)
+    fName += '-{:s}-{:s}-{:s}.csv'.format(b, cli.function, suffix)
+
+  if not os.path.isdir(cli.node):
+    os.mkdir(cli.node)
+  fPath = os.path.join(cli.node, fName)
+
+  cName = ['mean', 'stdev', 'min', 'max']
+  with open(fPath, "w") as fout:
+    h = [suffix]
+    for j in range(0, vSm.shape[1]):
+      h.append('Smil-{:s}'.format(cName[j]))
+    for j in range(0, vSm.shape[1]):
+      h.append('skimage-{:s}'.format(cName[j]))
+    fout.write(';'.join(h) + '\n')
+
+    for i in range(0, len(sz)):
+      sl = []
+      sl.append('{:d}'.format(int(sz[i])))
+      for j in range(0, vSm.shape[1]):
+        sl.append('{:.5f}'.format(vSm[i,j]))
+      for j in range(0, vSk.shape[1]):
+        sl.append('{:.5f}'.format(vSk[i,j]))
+      s = ';'.join(sl)
+      fout.write(s + '\n')
+
+# -----------------------------------------------------------------------------
+#
+#
 def printElapsed(ti, tf):
   print()
   print('* Elapsed time : {:.1f} s'.format(float(tf - ti)))
@@ -589,10 +638,11 @@ kFuncs = {
   'distance': False,
   'areaThreshold': False,
   'watershed': False,
-  'watershedOnly':False,
+  'watershedOnly': False,
   'zhangSkeleton': False,
   'thinning': False
 }
+
 
 # -----------------------------------------------------------------------------
 #
@@ -614,6 +664,7 @@ def appLoadFileConfig(fconfig=None):
 
   return config
 
+
 # -----------------------------------------------------------------------------
 #
 #
@@ -629,6 +680,10 @@ def getCliArgs():
 
   parser.add_argument('--nb', default=20, help='nb execs', type=int)
   parser.add_argument('--repeat', default=7, help='nb rounds', type=int)
+  parser.add_argument('--selector',
+                      default='mean',
+                      help='measurement selector : mean, min, max',
+                      type=str)
 
   parser.add_argument('--minImSize',
                       default=256,
@@ -663,6 +718,12 @@ def getCliArgs():
   parser.add_argument('--function', default='erode', help=sFuncs, type=str)
   cli = parser.parse_args()
 
+  okSel = ['mean', 'min', 'max']
+  if not cli.selector in okSel:
+    print('Invalid values for selector : {:s} - Choose one of {:s}'.format(
+      cli.selector, ', '.join(okSel)))
+    exit(1)
+
   if not cli.function in kFuncs:
     print("Not found : {:s}".format(cli.function))
     exit(1)
@@ -673,6 +734,7 @@ def getCliArgs():
 
   return cli
 
+
 # -----------------------------------------------------------------------------
 #
 #
@@ -682,10 +744,11 @@ def appSaveFileConfig(config=None, fconfig=None):
   with open(fconfig, "w") as cf:
     config.write(cf)
 
+
 # -----------------------------------------------------------------------------
 #
 #
-def getAppConfig(argv, CAppl = None):
+def getAppConfig(argv, CAppl=None):
   if CAppl is None:
     CAppl = {}
   CAppl['cli'] = getCliArgs(argv)
@@ -705,6 +768,7 @@ def getAppConfig(argv, CAppl = None):
 
   return CAppl
 
+
 # -----------------------------------------------------------------------------
 #
 #
@@ -722,6 +786,7 @@ def XgetConfigValues(argv):
 
   return config
 
+
 # -----------------------------------------------------------------------------
 #
 #
@@ -732,6 +797,19 @@ def getImageSizes(fin):
   depth = im.getDepth()
   isBin = sp.isBinary(im)
   return width, height, depth, isBin
+
+
+# -----------------------------------------------------------------------------
+#
+#
+def whichData(arr, selector="mean"):
+  if selector == "mean":
+    return arr[:, 0]
+  if selector == "min":
+    return arr[:, 2]
+  if selector == "max":
+    return arr[:, 3]
+  return arr[:, 0]
 
 
 # -----------------------------------------------------------------------------
@@ -798,14 +876,28 @@ msm = []
 msk = []
 
 ti = time.time()
-msm = doSmil(cli, imPath, cli.function, szCoefs, [1], nb=nb, repeat=repeat)
-msk = doSkImage(cli, imPath, cli.function, szCoefs, [1], nb=nb, repeat=repeat)
+msm, npsm = doSmil(cli,
+                   imPath,
+                   cli.function,
+                   szCoefs, [1],
+                   nb=nb,
+                   repeat=repeat)
+msk, npsk = doSkImage(cli,
+                      imPath,
+                      cli.function,
+                      szCoefs, [1],
+                      nb=nb,
+                      repeat=repeat)
 tf = time.time()
+
+msm = whichData(npsm, cli.selector)
+msk = whichData(npsk, cli.selector)
 
 sz = width * np.array(szCoefs)
 
 printSpeedUp(sz, msm, msk)
 saveResults(cli, sz, msm, msk, fName=None, suffix="szim")
+saveResultsNew(cli, sz, npsm, npsk, fName=None, suffix="szim")
 printElapsed(ti, tf)
 
 #
@@ -818,18 +910,27 @@ msk = []
 if kFuncs[cli.function]:
   printSectionHeader("Structuring element size")
   ti = time.time()
-  msm = doSmil(cli, imPath, cli.function, [1], seSizes, nb=nb, repeat=repeat)
-  msk = doSkImage(cli,
-                  imPath,
-                  cli.function, [1],
-                  seSizes,
-                  nb=nb,
-                  repeat=repeat)
+  msm, npsm = doSmil(cli,
+                     imPath,
+                     cli.function, [1],
+                     seSizes,
+                     nb=nb,
+                     repeat=repeat)
+  msk, npsk = doSkImage(cli,
+                        imPath,
+                        cli.function, [1],
+                        seSizes,
+                        nb=nb,
+                        repeat=repeat)
   tf = time.time()
+
+  msm = whichData(npsm, cli.selector)
+  msk = whichData(npsk, cli.selector)
 
   sz = np.array(seSizes)
   printSpeedUp(sz, msm, msk)
   saveResults(cli, sz, msm, msk, fName=None, suffix="szse")
+  saveResultsNew(cli, sz, npsm, npsk, fName=None, suffix="szse")
   printElapsed(ti, tf)
   print()
 
