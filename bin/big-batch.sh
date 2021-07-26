@@ -1,9 +1,20 @@
 #! /bin/bash
 
-DOIT=no
+DoIt=no
+DoInstall=no
+
 for opt in $*
 do
-  [ "$opt" == "yes" ] && DOIT=yes
+  case $opt in
+    --doit|yes)
+      DoIt=yes
+      ;;
+    --doinstall)
+      DoInstall=yes
+      ;;
+    *)
+      ;;
+  esac
 done
 
 imBin=""
@@ -24,9 +35,9 @@ imGray+=" hubble_EDF_gray.png"
 imGray+=" lena.png"
 imGray+=" tools.png"
 
-function doIt()
+function runIt()
 {
-  echo "* Entering doIt : $*"
+  echo "* Entering runIt : $*"
   type=
   funcs=
   opts=
@@ -59,11 +70,13 @@ function doIt()
     printf "  %-4s : %s\n" $type $im
     flock=$(printf "%s-%s-%s.witness" $type $im $fn)
     [ -f var/$flock ] && continue
-    [ "$DOIT" == "yes" ] && bin/do-all.sh $type $im "$funcs" "$opts"
-    if [ "$DOIT" == "yes" ]
+
+    if [ "$DoIt" == "yes" ]
     then
-      bin/do-install.sh
+      bin/do-all.sh $type $im "$funcs" "$opts"
+      [ "$?" == 0 ] || continue
       touch var/$flock
+      [ "$DoInstall" == "yes" ] && bin/do-install.sh
     fi
   done
   echo ""
@@ -72,28 +85,28 @@ function doIt()
 mkdir -p var
 
 # default functions for binary images
-doIt bin funcs=erode          nb=15 repeat=7
-doIt bin funcs=open           nb=15 repeat=7
-doIt bin funcs=label          nb=15 repeat=7
-doIt bin funcs=distance       nb=15 repeat=5
-doIt bin funcs=areaThreshold  nb=15 repeat=7
+runIt bin funcs=erode          nb=15 repeat=7
+runIt bin funcs=open           nb=15 repeat=7
+runIt bin funcs=label          nb=15 repeat=7
+runIt bin funcs=distance       nb=15 repeat=5
+runIt bin funcs=areaThreshold  nb=15 repeat=7
 
 # default functions for gray images
-doIt gray funcs=erode         nb=15 repeat=7
-doIt gray funcs=open          nb=15 repeat=7
-doIt gray funcs=tophat        nb=20 repeat=5
+runIt gray funcs=erode         nb=15 repeat=7
+runIt gray funcs=open          nb=15 repeat=7
+runIt gray funcs=tophat        nb=20 repeat=5
 
 # watershed
-doIt gray funcs=watershed     nb=15 repeat=5
-doIt bin  funcs=watershed     nb=15 repeat=5
+runIt gray funcs=watershed     nb=15 repeat=5
+runIt bin  funcs=watershed     nb=15 repeat=5
 
 
 # slow functions
-doIt gray funcs=hMinima       nb=5
-doIt gray funcs=areaOpen      nb=5
+runIt gray funcs=hMinima       nb=5
+runIt gray funcs=areaOpen      nb=5
 
-doIt bin  funcs=zhangSkeleton nb=5
-doIt bin  funcs=thinning      nb=5 repeat=3
+runIt bin  funcs=zhangSkeleton nb=5
+runIt bin  funcs=thinning      nb=5 repeat=3
 
 exit 0
 
