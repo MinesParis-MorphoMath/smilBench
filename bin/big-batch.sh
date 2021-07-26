@@ -79,7 +79,8 @@ doIt bin funcs=distance       nb=15 repeat=5
 doIt bin funcs=areaThreshold  nb=15 repeat=7
 
 # default functions for gray images
-doIt gray                     nb=20 repeat=5
+doIt gray funcs=erode         nb=15 repeat=7
+doIt gray funcs=open          nb=15 repeat=7
 doIt gray funcs=tophat        nb=20 repeat=5
 
 # watershed

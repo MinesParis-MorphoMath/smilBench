@@ -573,9 +573,9 @@ def saveResultsNew(cli, sz, vSm, vSk, fName=None, suffix="szim"):
   # fname = gray|bin + image + function + szse|seim
   if fName is None:
     if cli.binary:
-      fName = "New-bin"
+      fName = "Bin"
     else:
-      fName = "New-gray"
+      fName = "Gray"
     b, x = os.path.splitext(cli.fname)
     fName += '-{:s}-{:s}-{:s}.csv'.format(b, cli.function, suffix)
 
@@ -589,7 +589,7 @@ def saveResultsNew(cli, sz, vSm, vSk, fName=None, suffix="szim"):
     for j in range(0, vSm.shape[1]):
       h.append('Smil-{:s}'.format(cName[j]))
     for j in range(0, vSm.shape[1]):
-      h.append('skimage-{:s}'.format(cName[j]))
+      h.append('skImage-{:s}'.format(cName[j]))
     fout.write(';'.join(h) + '\n')
 
     for i in range(0, len(sz)):
