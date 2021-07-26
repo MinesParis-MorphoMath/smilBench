@@ -283,7 +283,7 @@ def doSmil(cli, fin=None, fs=None, szIm=[], szSE=[1], nb=10, repeat=7):
 
     for sz in szSE:
       dt = smilTime(cli, fs, imt, sz, nb, repeat, szi)
-      dt *= 1000
+      #dt *= 1000
       fmt = '{:4.1f} - {:6.0f} {:2d} - {:11.3f} {:11.3f} {:11.3f} {:11.3f} - (ms)'
       print(
         fmt.format(szi, szi * side, sz, dt.mean(), dt.std(), dt.min(), dt.max()))
@@ -509,7 +509,7 @@ def doSkImage(cli, fin=None, fs=None, szIm=[], szSE=[1], nb=10, repeat=7):
 
     for sz in szSE:
       dt = skTime(cli, fs, imt, sz, nb, repeat, szi)
-      dt *= 1000
+      #dt *= 1000
       fmt = '{:4.1f} - {:6.0f} {:2d} - {:11.3f} {:11.3f} {:11.3f} {:11.3f} - (ms)'
       print(
         fmt.format(szi, szi * side, sz, dt.mean(), dt.std(), dt.min(), dt.max()))
