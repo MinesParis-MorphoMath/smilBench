@@ -80,7 +80,17 @@ def printHeader():
 #   #       #    #    #  #          #       #
 #   #       #    #    #  ######     #       #
 #
-
+# -----------------------------------------------------------------------------
+#
+#
+def getNbAuto(tc = None):
+  if tc is None:
+    return 1
+  lnb = tc.autorange()
+  N = lnb[0]
+  if lnb[1] < 1:
+    N = lnb[0] * int(1. / lnb[1])
+  return N
 
 #
 #  ####   #    #     #    #
@@ -158,9 +168,12 @@ def smilTime(cli, fs, imIn, sz, nb, repeat, px=1):
   dt = np.zeros(repeat)
 
   if fs == 'erode':
-    dt = tit.repeat(lambda: sp.erode(imIn, imOut, se),
-                    number=nb,
-                    repeat=repeat)
+    ctit = tit.Timer(lambda: sp.erode(imIn, imOut, se))
+    nb = getNbAuto(ctit)
+    dt = ctit.repeat(repeat, nb)
+    #dt = tit.repeat(lambda: sp.erode(imIn, imOut, se),
+    #                number=N,
+    #                repeat=repeat)
 
   if fs == 'open':
     dt = tit.repeat(lambda: sp.open(imIn, imOut, se), number=nb, repeat=repeat)
@@ -257,21 +270,23 @@ def doSmil(cli, fin=None, fs=None, szIm=[], szSE=[1], nb=10, repeat=7):
   m = []
   npm = np.array(())
   printHeader()
-  for r in szIm:
-    if r != 1.:
+
+  for szi in szIm:
+    if szi != 1.:
       if sp.isBinary(im):
-        sp.scale(im, r, imt, "closest")
+        sp.scale(im, szi, imt, "closest")
       else:
-        sp.scale(im, r, r, imt, "bilinear")
+        sp.scale(im, szi, szi, imt, "bilinear")
     else:
       sp.copy(im, imt)
     imo = sp.Image(imt)
 
     for sz in szSE:
-      dt = smilTime(cli, fs, imt, sz, nb, repeat, r)
+      dt = smilTime(cli, fs, imt, sz, nb, repeat, szi)
+      dt *= 1000
       fmt = '{:4.1f} - {:6.0f} {:2d} - {:11.3f} {:11.3f} {:11.3f} {:11.3f} - (ms)'
       print(
-        fmt.format(r, r * side, sz, dt.mean(), dt.std(), dt.min(), dt.max()))
+        fmt.format(szi, szi * side, sz, dt.mean(), dt.std(), dt.min(), dt.max()))
 
       m.append(dt.min())
       npm = np.append(npm, [dt.mean(), dt.std(), dt.min(), dt.max()])
@@ -384,7 +399,10 @@ def skTime(cli, fs, imIn, sz, nb, repeat, px=1):
     se = mkCrossSE(sz)
 
   if fs == 'erode':
-    dt = tit.repeat(lambda: skm.erosion(imIn, se), number=nb, repeat=repeat)
+    ctit = tit.Timer(lambda: skm.erosion(imIn, se))
+    nb = getNbAuto(ctit)
+    dt = ctit.repeat(repeat, nb)
+    #dt = tit.repeat(lambda: skm.erosion(imIn, se), number=N, repeat=repeat)
 
   if fs == 'open':
     dt = tit.repeat(lambda: skm.opening(imIn, se), number=nb, repeat=repeat)
@@ -475,13 +493,13 @@ def doSkImage(cli, fin=None, fs=None, szIm=[], szSE=[1], nb=10, repeat=7):
   m = []
   npm = np.array(())
   printHeader()
-  for r in szIm:
-    if r != 1:
+  for szi in szIm:
+    if szi != 1:
       order = 1
       if cli.binary:
         order = 0
       imt = rescale(im,
-                    r,
+                    szi,
                     preserve_range=True,
                     order=order,
                     anti_aliasing=True,
@@ -490,10 +508,11 @@ def doSkImage(cli, fin=None, fs=None, szIm=[], szSE=[1], nb=10, repeat=7):
       imt = im.copy()
 
     for sz in szSE:
-      dt = skTime(cli, fs, imt, sz, nb, repeat, r)
+      dt = skTime(cli, fs, imt, sz, nb, repeat, szi)
+      dt *= 1000
       fmt = '{:4.1f} - {:6.0f} {:2d} - {:11.3f} {:11.3f} {:11.3f} {:11.3f} - (ms)'
       print(
-        fmt.format(r, r * side, sz, dt.mean(), dt.std(), dt.min(), dt.max()))
+        fmt.format(szi, szi * side, sz, dt.mean(), dt.std(), dt.min(), dt.max()))
       #m.append([dt.mean(), dt.std(), dt.min(), dt.max()])
       m.append(dt.min())
       npm = np.append(npm, [dt.mean(), dt.std(), dt.min(), dt.max()])
