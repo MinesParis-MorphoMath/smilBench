@@ -88,8 +88,8 @@ def getNbAuto(tc = None):
     return 1
   lnb = tc.autorange()
   N = lnb[0]
-  if lnb[1] < 1:
-    N = lnb[0] * int(1. / lnb[1])
+  if lnb[1] < 2:
+    N = int(lnb[0] * (2. / lnb[1]))
   return N
 
 #
@@ -147,13 +147,6 @@ def smilTime(cli, fs, imIn, sz, nb, repeat, px=1):
     sp.label(imMin, imLabel)
     sp.watershed(imGrad, imLabel, imOut, se)
 
-  #se = sp.CrossSE()
-  #sp.inv(imIn, imIn)
-  #imMin = sp.Image(imIn)
-  #sp.hMinima(imIn, 40, imMin, se)
-  #imLabel = sp.Image(imIn, 'UINT16')
-  #sp.label(imMin, imLabel)
-  #sp.watershed(imIn, imLabel, imOut, se)
 
   #
   #
@@ -231,7 +224,7 @@ def smilTime(cli, fs, imIn, sz, nb, repeat, px=1):
 
   if fs == 'watershed':
     if cli.binary:
-      ctit = tit.Timer(lambda: sp.binWatershed(imIn, imOut))
+      ctit = tit.Timer(lambda: binWatershed(imIn, imOut))
       nb = getNbAuto(ctit)
       dt = ctit.repeat(repeat, nb)
       #dt = tit.repeat(lambda: binWatershed(imIn, imOut),

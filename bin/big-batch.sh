@@ -6,10 +6,10 @@ DoInstall=no
 for opt in $*
 do
   case $opt in
-    --doit|yes)
+    --doit|--run|yes)
       DoIt=yes
       ;;
-    --doinstall)
+    --doinstall|--install)
       DoInstall=yes
       ;;
     *)
@@ -85,28 +85,28 @@ function runIt()
 mkdir -p var
 
 # default functions for binary images
-runIt bin funcs=erode          nb=15 repeat=7
-runIt bin funcs=open           nb=15 repeat=7
-runIt bin funcs=label          nb=15 repeat=7
-runIt bin funcs=distance       nb=15 repeat=5
-runIt bin funcs=areaThreshold  nb=15 repeat=7
+runIt bin funcs=erode          repeat=7
+runIt bin funcs=open           repeat=7
+runIt bin funcs=label          repeat=7
+runIt bin funcs=distance       repeat=7
+runIt bin funcs=areaThreshold  repeat=7
 
 # default functions for gray images
-runIt gray funcs=erode         nb=15 repeat=7
-runIt gray funcs=open          nb=15 repeat=7
-runIt gray funcs=tophat        nb=20 repeat=5
+runIt gray funcs=erode         repeat=7
+runIt gray funcs=open          repeat=7
+runIt gray funcs=tophat        repeat=7
 
 # watershed
-runIt gray funcs=watershed     nb=15 repeat=5
-runIt bin  funcs=watershed     nb=15 repeat=5
+runIt gray funcs=watershed     repeat=7
+runIt bin  funcs=watershed     repeat=7
 
 
 # slow functions
-runIt gray funcs=hMinima       nb=5
-runIt gray funcs=areaOpen      nb=5
+runIt gray funcs=hMinima       repeat=7
+runIt gray funcs=areaOpen      repeat=7
 
-runIt bin  funcs=zhangSkeleton nb=5
-runIt bin  funcs=thinning      nb=5 repeat=3
+runIt bin  funcs=zhangSkeleton repeat=7
+runIt bin  funcs=thinning      repeat=7
 
 exit 0
 

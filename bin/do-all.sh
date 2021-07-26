@@ -74,7 +74,7 @@ mkdir -p $ResDir
 
 for fname in $Files
 do
-  echo "=====> File $fname"
+  echo "  =====> File $fname"
   bname=$(basename $fname .png)
   fout=$(echo $fname | sed s/png/txt/)
   #cp /dev/null $ResDir/$fout
