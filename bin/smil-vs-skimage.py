@@ -166,6 +166,7 @@ def smilTime(cli, fs, imIn, sz, nb, repeat, px=1):
     se = sp.CrossSE(sz)
 
   dt = np.zeros(repeat)
+  ctit = None
 
   if fs == 'erode':
     ctit = tit.Timer(lambda: sp.erode(imIn, imOut, se))
@@ -176,76 +177,124 @@ def smilTime(cli, fs, imIn, sz, nb, repeat, px=1):
     #                repeat=repeat)
 
   if fs == 'open':
-    dt = tit.repeat(lambda: sp.open(imIn, imOut, se), number=nb, repeat=repeat)
+    ctit = tit.Timer(lambda: sp.open(imIn, imOut, se))
+    nb = getNbAuto(ctit)
+    dt = ctit.repeat(repeat, nb)
+    #dt = tit.repeat(lambda: sp.open(imIn, imOut, se), number=nb, repeat=repeat)
 
   if fs == 'tophat':
-    dt = tit.repeat(lambda: sp.topHat(imIn, imOut, se),
-                    number=nb,
-                    repeat=repeat)
+    ctit = tit.Timer(lambda: sp.topHat(imIn, imOut, se))
+    nb = getNbAuto(ctit)
+    dt = ctit.repeat(repeat, nb)
+    #dt = tit.repeat(lambda: sp.topHat(imIn, imOut, se),
+    #                number=nb,
+    #                repeat=repeat)
+
+  if fs == "gradient":
+    ctit = tit.Timer(lambda: sp.gradient(imIn, imOut, se))
+    nb = getNbAuto(ctit)
+    dt = ctit.repeat(repeat, nb)
 
   if fs == 'hMaxima':
-    dt = tit.repeat(lambda: sp.hMaxima(imIn, 10, imOut, se),
-                    number=nb,
-                    repeat=repeat)
+    ctit = tit.Timer(lambda: sp.hMaxima(imIn, 10, imOut, se))
+    nb = getNbAuto(ctit)
+    dt = ctit.repeat(repeat, nb)
+    #dt = tit.repeat(lambda: sp.hMaxima(imIn, 10, imOut, se),
+    #                number=nb,
+    #                repeat=repeat)
 
   if fs == 'hMinima':
-    dt = tit.repeat(lambda: sp.hMinima(imIn, 10, imOut, se),
-                    number=nb,
-                    repeat=repeat)
+    ctit = tit.Timer(lambda: sp.hMinima(imIn, 10, imOut, se))
+    nb = getNbAuto(ctit)
+    dt = ctit.repeat(repeat, nb)
+    #dt = tit.repeat(lambda: sp.hMinima(imIn, 10, imOut, se),
+    #                number=nb,
+    #                repeat=repeat)
 
   if fs == 'label':
     imOut = sp.Image(imIn, 'UINT32')
-    dt = tit.repeat(lambda: sp.label(imIn, imOut, se),
-                    number=nb,
-                    repeat=repeat)
+    ctit = tit.Timer(lambda: sp.label(imIn, imOut, se))
+    nb = getNbAuto(ctit)
+    dt = ctit.repeat(repeat, nb)
+    #dt = tit.repeat(lambda: sp.label(imIn, imOut, se),
+    #                number=nb,
+    #                repeat=repeat)
 
   if fs == 'fastLabel':
     imOut = sp.Image(imIn, 'UINT32')
-    dt = tit.repeat(lambda: sp.fastLabel(imIn, imOut, se),
-                    number=nb,
-                    repeat=repeat)
+    ctit = tit.Timer(lambda: sp.fastLabel(imIn, imOut, se))
+    nb = getNbAuto(ctit)
+    dt = ctit.repeat(repeat, nb)
+    #dt = tit.repeat(lambda: sp.fastLabel(imIn, imOut, se),
+    #                number=nb,
+    #                repeat=repeat)
 
   if fs == 'watershed':
     if cli.binary:
-      dt = tit.repeat(lambda: binWatershed(imIn, imOut),
-                      number=nb,
-                      repeat=repeat)
+      ctit = tit.Timer(lambda: sp.binWatershed(imIn, imOut))
+      nb = getNbAuto(ctit)
+      dt = ctit.repeat(repeat, nb)
+      #dt = tit.repeat(lambda: binWatershed(imIn, imOut),
+      #                number=nb,
+      #                repeat=repeat)
     else:
       h, sz = wsData[cli.fname]
-      dt = tit.repeat(lambda: grayWatershed(imIn, imOut, h, sz),
-                      number=nb,
-                      repeat=repeat)
+      ctit = tit.Timer(lambda: grayWatershed(imIn, imOut, h, sz))
+      nb = getNbAuto(ctit)
+      dt = ctit.repeat(repeat, nb)
+      #dt = tit.repeat(lambda: grayWatershed(imIn, imOut, h, sz),
+      #                number=nb,
+      #                repeat=repeat)
 
   if fs == 'areaOpen':
     if cli.arg is None:
       cli.arg = 500
     sz = int(cli.arg * px * px)
-    dt = tit.repeat(lambda: sp.areaOpen(imIn, sz, imOut, se),
-                    number=nb,
-                    repeat=repeat)
+    ctit = tit.Timer(lambda: sp.areaOpen(imIn, sz, imOut, se))
+    nb = getNbAuto(ctit)
+    dt = ctit.repeat(repeat, nb)
+    #dt = tit.repeat(lambda: sp.areaOpen(imIn, sz, imOut, se),
+    #                number=nb,
+    #                repeat=repeat)
 
   if fs == 'areaThreshold':
     if cli.arg is None:
       cli.arg = 500
     sz = int(cli.arg * px * px)
-    dt = tit.repeat(lambda: sp.areaThreshold(imIn, sz, imOut, True),
-                    number=nb,
-                    repeat=repeat)
+    ctit = tit.Timer(lambda: sp.areaThreshold(imIn, sz, imOut, True))
+    nb = getNbAuto(ctit)
+    dt = ctit.repeat(repeat, nb)
+    #dt = tit.repeat(lambda: sp.areaThreshold(imIn, sz, imOut, True),
+    #                number=nb,
+    #                repeat=repeat)
 
   if fs == 'distance':
-    dt = tit.repeat(lambda: sp.distanceEuclidean(imIn, imOut),
-                    number=nb,
-                    repeat=repeat)
+    ctit = tit.Timer(lambda: sp.distanceEuclidean(imIn, imOut))
+    nb = getNbAuto(ctit)
+    dt = ctit.repeat(repeat, nb)
+    #dt = tit.repeat(lambda: sp.distanceEuclidean(imIn, imOut),
+    #                number=nb,
+    #                repeat=repeat)
 
   if fs == 'zhangSkeleton':
-    dt = tit.repeat(lambda: sp.zhangSkeleton(imIn, imOut),
-                    number=nb,
-                    repeat=repeat)
+    ctit = tit.Timer(lambda: sp.zhangSkeleton(imIn, imOut))
+    nb = getNbAuto(ctit)
+    dt = ctit.repeat(repeat, nb)
+    #dt = tit.repeat(lambda: sp.zhangSkeleton(imIn, imOut),
+    #                number=nb,
+    #                repeat=repeat)
 
   if fs == 'thinning':
-    dt = tit.repeat(lambda: sp.fullThin(imIn, sp.HMT_hL(6), imOut),
-                    number=nb,
-                    repeat=repeat)
+    ctit = tit.Timer(lambda: sp.fullThin(imIn, sp.HMT_hL(6), imOut))
+    nb = getNbAuto(ctit)
+    dt = ctit.repeat(repeat, nb)
+    #dt = tit.repeat(lambda: sp.fullThin(imIn, sp.HMT_hL(6), imOut),
+    #                number=nb,
+    #                repeat=repeat)
+
+  if False and not ctit is None:
+    nb = getNbAuto(ctit)
+    dt = ctit.repeat(repeat, nb)
 
   dt = np.array(dt)
   dt *= (1000. / nb)
@@ -308,7 +357,7 @@ def doSmil(cli, fin=None, fs=None, szIm=[], szSE=[1], nb=10, repeat=7):
 # -----------------------------------------------------------------------------
 # Structuring elements
 #
-def mkSquareSE(sz=1, D3=False):
+def mkSquareSE(cli, sz=1, D3=False):
   dim = 2 * sz + 1
   if D3:
     se = np.ndarray((dim, dim, dim), dtype='uint8')
@@ -316,14 +365,14 @@ def mkSquareSE(sz=1, D3=False):
   else:
     se = np.ndarray((dim, dim), dtype='uint8')
     se[:, :] = 1
-
+    se = skm.selem.square(2*sz + 1)
   return se
 
 
 # -----------------------------------------------------------------------------
 #
 #
-def mkCrossSE(sz=1, D3=False):
+def mkCrossSE(cli, sz=1, D3=False):
   dim = 2 * sz + 1
   if D3:
     se = np.ndarray((dim, dim, dim), dtype='uint8')
@@ -332,10 +381,11 @@ def mkCrossSE(sz=1, D3=False):
     se[:, dim // 2, :] = 1
     se[dim // 2, :, :] = 1
   else:
-    se = np.ndarray((dim, dim), dtype='uint8')
-    se[:, :] = 0
-    se[:, dim // 2] = 1
-    se[dim // 2, :] = 1
+    #se = np.ndarray((dim, dim), dtype='uint8')
+    #se[:, :] = 0
+    #se[:, dim // 2] = 1
+    #se[dim // 2, :] = 1
+    se = skm.selem.diamond(sz)
 
   return se
 
@@ -392,11 +442,13 @@ def skTime(cli, fs, imIn, sz, nb, repeat, px=1):
   #
   #
   #
-  dt = np.zeros(repeat)
   if cli.squareSe:
-    se = mkSquareSE(sz)
+    se = mkSquareSE(cli, sz)
   else:
-    se = mkCrossSE(sz)
+    se = mkCrossSE(cli, sz)
+
+  dt = np.zeros(repeat)
+  ctit = None
 
   if fs == 'erode':
     ctit = tit.Timer(lambda: skm.erosion(imIn, se))
@@ -405,71 +457,119 @@ def skTime(cli, fs, imIn, sz, nb, repeat, px=1):
     #dt = tit.repeat(lambda: skm.erosion(imIn, se), number=N, repeat=repeat)
 
   if fs == 'open':
-    dt = tit.repeat(lambda: skm.opening(imIn, se), number=nb, repeat=repeat)
+    ctit = tit.Timer(lambda: skm.opening(imIn, se))
+    nb = getNbAuto(ctit)
+    dt = ctit.repeat(repeat, nb)
+    #dt = tit.repeat(lambda: skm.opening(imIn, se), number=nb, repeat=repeat)
 
   if fs == 'tophat':
-    dt = tit.repeat(lambda: skm.white_tophat(imIn, se),
-                    number=nb,
-                    repeat=repeat)
+    ctit = tit.Timer(lambda: skm.white_tophat(imIn, se))
+    nb = getNbAuto(ctit)
+    dt = ctit.repeat(repeat, nb)
+    #dt = tit.repeat(lambda: skm.white_tophat(imIn, se),
+    #                number=nb,
+    #                repeat=repeat)
+
+  if fs == 'gradient':
+    ctit = tit.Timer(lambda: skm.gradient(imIn, se))
+    nb = getNbAuto(ctit)
+    dt = ctit.repeat(repeat, nb)
 
   if fs == 'hMaxima':
-    dt = tit.repeat(lambda: skm.h_maxima(imIn, 10, se),
-                    number=nb,
-                    repeat=repeat)
+    ctit = tit.Timer(lambda: skm.h_maxima(imIn, 10, se))
+    nb = getNbAuto(ctit)
+    dt = ctit.repeat(repeat, nb)
+    #dt = tit.repeat(lambda: skm.h_maxima(imIn, 10, se),
+    #                number=nb,
+    #                repeat=repeat)
 
   if fs == 'hMinima':
-    dt = tit.repeat(lambda: skm.h_minima(imIn, 10, se),
-                    number=nb,
-                    repeat=repeat)
+    ctit = tit.Timer(lambda: skm.h_minima(imIn, 10, se))
+    nb = getNbAuto(ctit)
+    dt = ctit.repeat(repeat, nb)
+    #dt = tit.repeat(lambda: skm.h_minima(imIn, 10, se),
+    #                number=nb,
+    #                repeat=repeat)
 
   if fs == 'label':
-    dt = tit.repeat(lambda: skm.label(imIn, connectivity=2),
-                    number=nb,
-                    repeat=repeat)
+    ctit = tit.Timer(lambda: skm.label(imIn, connectivity=2))
+    nb = getNbAuto(ctit)
+    dt = ctit.repeat(repeat, nb)
+    #dt = tit.repeat(lambda: skm.label(imIn, connectivity=2),
+    #                number=nb,
+    #                repeat=repeat)
 
   if fs == 'fastLabel':
-    dt = tit.repeat(lambda: skm.label(imIn, connectivity=2),
-                    number=nb,
-                    repeat=repeat)
+    ctit = tit.Timer(lambda: skm.label(imIn, connectivity=2))
+    nb = getNbAuto(ctit)
+    dt = ctit.repeat(repeat, nb)
+    #dt = tit.repeat(lambda: skm.label(imIn, connectivity=2),
+    #                number=nb,
+    #                repeat=repeat)
 
   if fs == 'watershed':
     if cli.binary:
-      dt = tit.repeat(lambda: binWatershed(imIn), number=nb, repeat=repeat)
+      ctit = tit.Timer(lambda: binWatershed(imIn))
+      nb = getNbAuto(ctit)
+      dt = ctit.repeat(repeat, nb)
+      #dt = tit.repeat(lambda: binWatershed(imIn), number=nb, repeat=repeat)
     else:
       szg, szo = wsData[cli.fname]
-      dt = tit.repeat(lambda: grayWatershed(imIn, szg, szo),
-                      number=nb,
-                      repeat=repeat)
+      ctit = tit.Timer(lambda: grayWatershed(imIn, szg, szo))
+      nb = getNbAuto(ctit)
+      dt = ctit.repeat(repeat, nb)
+      #dt = tit.repeat(lambda: grayWatershed(imIn, szg, szo),
+      #                number=nb,
+      #                repeat=repeat)
 
   if fs == 'areaOpen':
     if cli.arg is None:
       cli.arg = 500
     sz = int(cli.arg * px * px)
-    dt = tit.repeat(
-      lambda: skm.area_opening(imIn, area_threshold=sz, connectivity=1),
-      number=nb,
-      repeat=repeat)
+    ctit = tit.Timer(lambda: skm.area_opening(imIn, area_threshold=sz, connectivity=1))
+    nb = getNbAuto(ctit)
+    dt = ctit.repeat(repeat, nb)
+    #dt = tit.repeat(
+    #  lambda: skm.area_opening(imIn, area_threshold=sz, connectivity=1),
+    #  number=nb,
+    #  repeat=repeat)
 
   if fs == 'areaThreshold':
     if cli.arg is None:
       cli.arg = 500
     sz = int(cli.arg * px * px)
-    dt = tit.repeat(lambda: skAreaThreshold(imIn, sz=sz),
-                    number=nb,
-                    repeat=repeat)
+    ctit = tit.Timer(lambda: skAreaThreshold(imIn, sz=sz))
+    nb = getNbAuto(ctit)
+    dt = ctit.repeat(repeat, nb)
+    #dt = tit.repeat(lambda: skAreaThreshold(imIn, sz=sz),
+    #                number=nb,
+    #                repeat=repeat)
 
   if fs == 'distance':
-    dt = tit.repeat(lambda: sci.distance_transform_edt(imIn),
-                    number=nb,
-                    repeat=repeat)
+    ctit = tit.Timer(lambda: sci.distance_transform_edt(imIn))
+    nb = getNbAuto(ctit)
+    dt = ctit.repeat(repeat, nb)
+    #dt = tit.repeat(lambda: sci.distance_transform_edt(imIn),
+    #                number=nb,
+    #                repeat=repeat)
 
   if fs == 'zhangSkeleton':
     imIn = imIn.astype(bool)
-    dt = tit.repeat(lambda: skm.skeletonize(imIn), number=nb, repeat=repeat)
+    ctit = tit.Timer(lambda: skm.skeletonize(imIn))
+    nb = getNbAuto(ctit)
+    dt = ctit.repeat(repeat, nb)
+    #dt = tit.repeat(lambda: skm.skeletonize(imIn), number=nb, repeat=repeat)
 
   if fs == 'thinning':
     imIn = imIn.astype(bool)
-    dt = tit.repeat(lambda: skm.thin(imIn), number=nb, repeat=repeat)
+    ctit = tit.Timer(lambda: skm.thin(imIn))
+    nb = getNbAuto(ctit)
+    dt = ctit.repeat(repeat, nb)
+    #dt = tit.repeat(lambda: skm.thin(imIn), number=nb, repeat=repeat)
+
+  if False and not ctit is None:
+    nb = getNbAuto(ctit)
+    dt = ctit.repeat(repeat, nb)
 
   dt = np.array(dt)
   dt *= (1000. / nb)
