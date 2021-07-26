@@ -67,10 +67,10 @@ function runIt()
   for im in $Imgs
   do
     [ -f stopnow ] && break
-    printf "  %-4s : %s\n" $type $im
+    printf "  %-4s : %-30s" $type $im
     flock=$(printf "%s-%s-%s.witness" $type $im $fn)
-    [ -f var/$flock ] && continue
-
+    [ -f var/$flock ] && printf "done\n" && continue
+    printf "to do\n"
     if [ "$DoIt" == "yes" ]
     then
       bin/do-all.sh $type $im "$funcs" "$opts"
