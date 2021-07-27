@@ -66,7 +66,7 @@ import statistics as st
 
 
 def printHeader():
-  fmt = '{:4s} - {:>6s} {:2s} - {:>11s} {:>11s} {:>11s} {:>11s}'
+  fmt = '{:5s} - {:>6s} {:2s} - {:>11s} {:>11s} {:>11s} {:>11s}'
   s = fmt.format('', 'Side', 'SE', 'Mean', 'Std Dev', 'Min', 'Max')
   print(s)
   print('-' * len(s))
@@ -326,7 +326,7 @@ def doSmil(cli, fin=None, fs=None, szIm=[], szSE=[1], nb=10, repeat=7):
     for sz in szSE:
       dt = smilTime(cli, fs, imt, sz, nb, repeat, szi)
       #dt *= 1000
-      fmt = '{:4.1f} - {:6.0f} {:2d} - {:11.3f} {:11.3f} {:11.3f} {:11.3f} - (ms)'
+      fmt = '{:5.1f} - {:6.0f} {:2d} - {:11.3f} {:11.3f} {:11.3f} {:11.3f} - (ms)'
       print(
         fmt.format(szi, szi * side, sz, dt.mean(), dt.std(), dt.min(), dt.max()))
 
@@ -464,7 +464,8 @@ def skTime(cli, fs, imIn, sz, nb, repeat, px=1):
     #                repeat=repeat)
 
   if fs == 'gradient':
-    ctit = tit.Timer(lambda: skm.gradient(imIn, se))
+    imIn = imIn.astype('uint8')
+    ctit = tit.Timer(lambda: rank.gradient(imIn, se))
     nb = getNbAuto(ctit)
     dt = ctit.repeat(repeat, nb)
 
@@ -603,7 +604,7 @@ def doSkImage(cli, fin=None, fs=None, szIm=[], szSE=[1], nb=10, repeat=7):
     for sz in szSE:
       dt = skTime(cli, fs, imt, sz, nb, repeat, szi)
       #dt *= 1000
-      fmt = '{:4.1f} - {:6.0f} {:2d} - {:11.3f} {:11.3f} {:11.3f} {:11.3f} - (ms)'
+      fmt = '{:5.1f} - {:6.0f} {:2d} - {:11.3f} {:11.3f} {:11.3f} {:11.3f} - (ms)'
       print(
         fmt.format(szi, szi * side, sz, dt.mean(), dt.std(), dt.min(), dt.max()))
       #m.append([dt.mean(), dt.std(), dt.min(), dt.max()])
@@ -743,6 +744,7 @@ kFuncs = {
   'erode': True,
   'open': True,
   'tophat': True,
+  'gradient': True,
   'hMaxima': True,
   'hMinima': True,
   'label': False,
@@ -957,7 +959,7 @@ if isBin:
 else:
   print('  type   : gray')
 print('Function : {:s}'.format(cli.function))
-print('  nb     : {:5d}'.format(nb))
+#print('  nb     : {:5d}'.format(nb))
 print('  repeat : {:5d}'.format(repeat))
 
 print()

@@ -95,6 +95,7 @@ runIt bin funcs=areaThreshold  repeat=7
 runIt gray funcs=erode         repeat=7
 runIt gray funcs=open          repeat=7
 runIt gray funcs=tophat        repeat=7
+runIt gray funcs=gradient      repeat=7
 
 # watershed
 runIt gray funcs=watershed     repeat=7
