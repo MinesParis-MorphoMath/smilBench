@@ -44,12 +44,12 @@ import configparser as cp
 
 import smilPython as sp
 
-import skimage as ski
+#import skimage as ski
 import skimage.io as io
 import skimage.morphology as skm
-from skimage.transform import rescale, resize, downscale_local_mean
+from skimage.transform import rescale, resize
 
-import scipy.ndimage as sci
+#import scipy.ndimage as sci
 from scipy import ndimage as ndi
 
 from skimage.segmentation import watershed
@@ -57,6 +57,7 @@ from skimage.feature import peak_local_max
 from skimage.filters import rank
 
 import numpy as np
+import math as m
 
 import statistics as st
 
@@ -86,10 +87,11 @@ def printHeader():
 def getNbAuto(tc=None):
   if tc is None:
     return 1
+  # (nb, dt) returned by autorange()
   lnb = tc.autorange()
   N = lnb[0]
   if lnb[1] < 2:
-    N = int(lnb[0] * (2. / lnb[1]))
+    N = m.ceil(lnb[0] * (2. / lnb[1]))
   return N
 
 
@@ -114,7 +116,7 @@ def smilTime(cli, fs, imIn, sz, nb, repeat, px=1):
   #
   #
   #
-  def binWatershed(imIn, imOut, onlyWS=False):
+  def binSegmentation(imIn, imOut, onlyWS=False):
     dt = []
     se = sp.HexSE()
     imDist = sp.Image(imIn)
@@ -133,7 +135,7 @@ def smilTime(cli, fs, imIn, sz, nb, repeat, px=1):
   #
   #
   #
-  def grayWatershed(imIn, imOut, h=5, sz=0):
+  def graySegmentation(imIn, imOut, h=5, sz=0):
     se = sp.HexSE()
     imOpen = sp.Image(imIn)
     if sz > 0:
@@ -203,14 +205,14 @@ def smilTime(cli, fs, imIn, sz, nb, repeat, px=1):
     nb = getNbAuto(ctit)
     dt = ctit.repeat(repeat, nb)
 
-  if fs == 'watershed':
+  if fs == 'segmentation':
     if cli.binary:
-      ctit = tit.Timer(lambda: binWatershed(imIn, imOut))
+      ctit = tit.Timer(lambda: binSegmentation(imIn, imOut))
       nb = getNbAuto(ctit)
       dt = ctit.repeat(repeat, nb)
     else:
       h, sz = wsData[cli.fname]
-      ctit = tit.Timer(lambda: grayWatershed(imIn, imOut, h, sz))
+      ctit = tit.Timer(lambda: graySegmentation(imIn, imOut, h, sz))
       nb = getNbAuto(ctit)
       dt = ctit.repeat(repeat, nb)
 
@@ -354,7 +356,7 @@ def skTime(cli, fs, imIn, sz, nb, repeat, px=1):
   #
   #
   #
-  def binWatershed(imIn):
+  def binSegmentation(imIn):
     imIn = imIn.astype(int)
     # https://scikit-image.org/docs/dev/auto_examples/segmentation/plot_watershed.html
     distance = ndi.distance_transform_edt(imIn)
@@ -365,7 +367,7 @@ def skTime(cli, fs, imIn, sz, nb, repeat, px=1):
     labels = watershed(-distance, markers, mask=mask)
     return labels
 
-  def grayWatershed(imIn, szg, szo):
+  def graySegmentation(imIn, szg, szo):
     imIn = imIn.astype('uint8')
     # denoise image
     denoised = rank.median(imIn, skm.disk(szo))
@@ -439,14 +441,14 @@ def skTime(cli, fs, imIn, sz, nb, repeat, px=1):
     nb = getNbAuto(ctit)
     dt = ctit.repeat(repeat, nb)
 
-  if fs == 'watershed':
+  if fs == 'segmentation':
     if cli.binary:
-      ctit = tit.Timer(lambda: binWatershed(imIn))
+      ctit = tit.Timer(lambda: binSegmentation(imIn))
       nb = getNbAuto(ctit)
       dt = ctit.repeat(repeat, nb)
     else:
       szg, szo = wsData[cli.fname]
-      ctit = tit.Timer(lambda: grayWatershed(imIn, szg, szo))
+      ctit = tit.Timer(lambda: graySegmentation(imIn, szg, szo))
       nb = getNbAuto(ctit)
       dt = ctit.repeat(repeat, nb)
 
@@ -468,7 +470,7 @@ def skTime(cli, fs, imIn, sz, nb, repeat, px=1):
     dt = ctit.repeat(repeat, nb)
 
   if fs == 'distance':
-    ctit = tit.Timer(lambda: sci.distance_transform_edt(imIn))
+    ctit = tit.Timer(lambda: ndi.distance_transform_edt(imIn))
     nb = getNbAuto(ctit)
     dt = ctit.repeat(repeat, nb)
 
@@ -647,7 +649,7 @@ kFuncs = {
   'areaOpen': False,
   'distance': False,
   'areaThreshold': False,
-  'watershed': False,
+  'segmentation': False,
   'watershedOnly': False,
   'zhangSkeleton': False,
   'thinning': False
