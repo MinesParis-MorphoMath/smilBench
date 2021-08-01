@@ -84,18 +84,6 @@ def printHeader():
 # -----------------------------------------------------------------------------
 #
 #
-t0 = time.time()
-
-def timeInit():
-  global t0
-  t0 = time.time()
-
-def getProcTime():
-  return time.time() - t0
-
-def printProcTime(s = ''):
-  print('= Time {:8.1f} : {:s}'.format(time.time() - t0, s))
-
 def getNbAuto(tc=None):
   if tc is None:
     return 1
@@ -298,18 +286,13 @@ def doSmil(cli, fin=None, fs=None, szIm=[], szSE=[1], nb=10, repeat=7):
     imo = sp.Image(imt)
 
     for sz in szSE:
-      if cli.debug:
-        printProcTime('Call smilTime({:4.1f}, {:2d})'.format(szi, sz))
       dt = smilTime(cli, fs, imt, sz, nb, repeat, szi)
-      if cli.debug:
-        printProcTime('Back from smilTime()')
       fmt = '{:5.1f} - {:6.0f} {:2d} - {:11.3f} {:11.3f} {:11.3f} {:11.3f} - (ms)'
       print(
         fmt.format(szi, szi * side, sz, dt.mean(), dt.std(), dt.min(),
                    dt.max()))
       m.append(dt.min())
       npm = np.append(npm, [dt.mean(), dt.std(), dt.min(), dt.max()])
-
   print()
   npm = npm.reshape((npm.shape[0] // 4, 4))
   return np.array(m), npm
@@ -544,11 +527,7 @@ def doSkImage(cli, fin=None, fs=None, szIm=[], szSE=[1], nb=10, repeat=7):
       imt = im.copy()
 
     for sz in szSE:
-      if cli.debug:
-        printProcTime('Call skTime({:4.1f}, {:2d})'.format(szi, sz))
       dt = skTime(cli, fs, imt, sz, nb, repeat, szi)
-      if cli.debug:
-        printProcTime('Back from skTime()')
       fmt = '{:5.1f} - {:6.0f} {:2d} - {:11.3f} {:11.3f} {:11.3f} {:11.3f} - (ms)'
       print(
         fmt.format(szi, szi * side, sz, dt.mean(), dt.std(), dt.min(),
