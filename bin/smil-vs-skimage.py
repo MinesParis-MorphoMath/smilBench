@@ -259,6 +259,9 @@ def smilTime(cli, fs, imIn, sz, nb, repeat, px=1):
     nb = getNbAuto(ctit)
     dt = ctit.repeat(repeat, nb)
 
+  if cli.debug:
+    print(" Debug : nb {:d}".format(int(nb)))
+
   if False and not ctit is None:
     nb = getNbAuto(ctit)
     dt = ctit.repeat(repeat, nb)
@@ -502,6 +505,9 @@ def skTime(cli, fs, imIn, sz, nb, repeat, px=1):
     ctit = tit.Timer(lambda: skm.thin(imIn))
     nb = getNbAuto(ctit)
     dt = ctit.repeat(repeat, nb)
+
+  if cli.debug:
+    print(" Debug : nb {:d}".format(int(nb)))
 
   if False and not ctit is None:
     nb = getNbAuto(ctit)
