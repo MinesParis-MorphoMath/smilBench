@@ -102,8 +102,9 @@ def getNbAuto(tc=None):
   # (nb, dt) returned by autorange()
   lnb = tc.autorange()
   N = lnb[0]
-  if lnb[1] < 2:
-    N = m.ceil(lnb[0] * (2. / lnb[1]))
+  #if lnb[1] < 2:
+  #  N = m.ceil(lnb[0] * (2. / lnb[1]))
+  print("   ===> lnb {:d} {:.3f}".format(int(lnb[0]), lnb[1]))
   return N
 
 
@@ -261,7 +262,7 @@ def smilTime(cli, fs, imIn, sz, repeat, px=1):
     dt = ctit.repeat(repeat = repeat, number = nb)
 
   if cli.debug:
-    print(" Debug : nb {:d}".format(int(nb)))
+    print("  Debug : nb {:d}".format(int(nb)))
 
   if False and not ctit is None:
     nb = getNbAuto(ctit)
