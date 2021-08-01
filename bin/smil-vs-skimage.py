@@ -235,7 +235,8 @@ def smilTime(cli, fs, imIn, sz, repeat, px=1):
       cli.arg = 500
     sz = int(cli.arg * px * px)
     ctit = tit.Timer(lambda: sp.areaOpen(imIn, sz, imOut, se))
-    nb = getNbAuto(ctit)
+    nb, _ = ctit.autorange()
+    #nb = getNbAuto(ctit)
     dt = ctit.repeat(repeat = repeat, number = nb)
 
   if fs == 'areaThreshold':
@@ -481,7 +482,8 @@ def skTime(cli, fs, imIn, sz, repeat, px=1):
     sz = int(cli.arg * px * px)
     ctit = tit.Timer(
       lambda: skm.area_opening(imIn, area_threshold=sz, connectivity=1))
-    nb = getNbAuto(ctit)
+    #nb = getNbAuto(ctit)
+    nb, _ = ctit.autorange()
     dt = ctit.repeat(repeat = repeat, number = nb)
 
   if fs == 'areaThreshold':
