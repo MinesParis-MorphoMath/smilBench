@@ -115,7 +115,7 @@ def getNbAuto(tc=None):
 # #    #  #    #     #    #
 #  ####   #    #     #    ######
 #
-def smilTime(cli, fs, imIn, sz, nb, repeat, px=1):
+def smilTime(cli, fs, imIn, sz, repeat, px=1):
 
   wsData = {
     'astronaut.png': [10, 0],
@@ -175,58 +175,59 @@ def smilTime(cli, fs, imIn, sz, nb, repeat, px=1):
   dt = np.zeros(repeat)
   ctit = None
 
+  nb = 1
   if fs == 'erode':
     ctit = tit.Timer(lambda: sp.erode(imIn, imOut, se))
     nb = getNbAuto(ctit)
-    dt = ctit.repeat(repeat, nb)
+    dt = ctit.repeat(repeat = repeat, number = nb)
 
   if fs == 'open':
     ctit = tit.Timer(lambda: sp.open(imIn, imOut, se))
     nb = getNbAuto(ctit)
-    dt = ctit.repeat(repeat, nb)
+    dt = ctit.repeat(repeat = repeat, number = nb)
 
   if fs == 'tophat':
     ctit = tit.Timer(lambda: sp.topHat(imIn, imOut, se))
     nb = getNbAuto(ctit)
-    dt = ctit.repeat(repeat, nb)
+    dt = ctit.repeat(repeat = repeat, number = nb)
 
   if fs == "gradient":
     ctit = tit.Timer(lambda: sp.gradient(imIn, imOut, se))
     nb = getNbAuto(ctit)
-    dt = ctit.repeat(repeat, nb)
+    dt = ctit.repeat(repeat = repeat, number = nb)
 
   if fs == 'hMaxima':
     ctit = tit.Timer(lambda: sp.hMaxima(imIn, 10, imOut, se))
     nb = getNbAuto(ctit)
-    dt = ctit.repeat(repeat, nb)
+    dt = ctit.repeat(repeat = repeat, number = nb)
 
   if fs == 'hMinima':
     ctit = tit.Timer(lambda: sp.hMinima(imIn, 10, imOut, se))
     nb = getNbAuto(ctit)
-    dt = ctit.repeat(repeat, nb)
+    dt = ctit.repeat(repeat = repeat, number = nb)
 
   if fs == 'label':
     imOut = sp.Image(imIn, 'UINT32')
     ctit = tit.Timer(lambda: sp.label(imIn, imOut, se))
     nb = getNbAuto(ctit)
-    dt = ctit.repeat(repeat, nb)
+    dt = ctit.repeat(repeat = repeat, number = nb)
 
   if fs == 'fastLabel':
     imOut = sp.Image(imIn, 'UINT32')
     ctit = tit.Timer(lambda: sp.fastLabel(imIn, imOut, se))
     nb = getNbAuto(ctit)
-    dt = ctit.repeat(repeat, nb)
+    dt = ctit.repeat(repeat = repeat, number = nb)
 
   if fs == 'segmentation':
     if cli.binary:
       ctit = tit.Timer(lambda: binSegmentation(imIn, imOut))
       nb = getNbAuto(ctit)
-      dt = ctit.repeat(repeat, nb)
+      dt = ctit.repeat(repeat = repeat, number = nb)
     else:
       h, sz = wsData[cli.fname]
       ctit = tit.Timer(lambda: graySegmentation(imIn, imOut, h, sz))
       nb = getNbAuto(ctit)
-      dt = ctit.repeat(repeat, nb)
+      dt = ctit.repeat(repeat = repeat, number = nb)
 
   if fs == 'areaOpen':
     if cli.arg is None:
@@ -234,7 +235,7 @@ def smilTime(cli, fs, imIn, sz, nb, repeat, px=1):
     sz = int(cli.arg * px * px)
     ctit = tit.Timer(lambda: sp.areaOpen(imIn, sz, imOut, se))
     nb = getNbAuto(ctit)
-    dt = ctit.repeat(repeat, nb)
+    dt = ctit.repeat(repeat = repeat, number = nb)
 
   if fs == 'areaThreshold':
     if cli.arg is None:
@@ -242,29 +243,29 @@ def smilTime(cli, fs, imIn, sz, nb, repeat, px=1):
     sz = int(cli.arg * px * px)
     ctit = tit.Timer(lambda: sp.areaThreshold(imIn, sz, imOut, True))
     nb = getNbAuto(ctit)
-    dt = ctit.repeat(repeat, nb)
+    dt = ctit.repeat(repeat = repeat, number = nb)
 
   if fs == 'distance':
     ctit = tit.Timer(lambda: sp.distanceEuclidean(imIn, imOut))
     nb = getNbAuto(ctit)
-    dt = ctit.repeat(repeat, nb)
+    dt = ctit.repeat(repeat = repeat, number = nb)
 
   if fs == 'zhangSkeleton':
     ctit = tit.Timer(lambda: sp.zhangSkeleton(imIn, imOut))
     nb = getNbAuto(ctit)
-    dt = ctit.repeat(repeat, nb)
+    dt = ctit.repeat(repeat = repeat, number = nb)
 
   if fs == 'thinning':
     ctit = tit.Timer(lambda: sp.fullThin(imIn, sp.HMT_hL(6), imOut))
     nb = getNbAuto(ctit)
-    dt = ctit.repeat(repeat, nb)
+    dt = ctit.repeat(repeat = repeat, number = nb)
 
   if cli.debug:
     print(" Debug : nb {:d}".format(int(nb)))
 
   if False and not ctit is None:
     nb = getNbAuto(ctit)
-    dt = ctit.repeat(repeat, nb)
+    dt = ctit.repeat(repeat = repeat, number = nb)
 
   dt = np.array(dt)
   dt *= (1000. / nb)
@@ -275,7 +276,7 @@ def smilTime(cli, fs, imIn, sz, nb, repeat, px=1):
 # -----------------------------------------------------------------------------
 #
 #
-def doSmil(cli, fin=None, fs=None, szIm=[], szSE=[1], nb=10, repeat=7):
+def doSmil(cli, fin=None, fs=None, szIm=[], szSE=[1], repeat=7):
   if fs is None:
     return []
 
@@ -303,7 +304,7 @@ def doSmil(cli, fin=None, fs=None, szIm=[], szSE=[1], nb=10, repeat=7):
     for sz in szSE:
       if cli.debug:
         printProcTime('Call smilTime({:4.1f}, {:2d})'.format(szi, sz))
-      dt = smilTime(cli, fs, imt, sz, nb, repeat, szi)
+      dt = smilTime(cli, fs, imt, sz, repeat, szi)
       if cli.debug:
         printProcTime('Back from smilTime()')
       fmt = '{:5.1f} - {:6.0f} {:2d} - {:11.3f} {:11.3f} {:11.3f} {:11.3f} - (ms)'
@@ -363,7 +364,7 @@ def mkCrossSE(cli, sz=1, D3=False):
 # -----------------------------------------------------------------------------
 #
 #
-def skTime(cli, fs, imIn, sz, nb, repeat, px=1):
+def skTime(cli, fs, imIn, sz, repeat, px=1):
 
   wsData = {
     'astronaut.png': [2, 5],
@@ -420,57 +421,58 @@ def skTime(cli, fs, imIn, sz, nb, repeat, px=1):
   dt = np.zeros(repeat)
   ctit = None
 
+  nb = 1
   if fs == 'erode':
     ctit = tit.Timer(lambda: skm.erosion(imIn, se))
     nb = getNbAuto(ctit)
-    dt = ctit.repeat(repeat, nb)
+    dt = ctit.repeat(repeat = repeat, number = nb)
 
   if fs == 'open':
     ctit = tit.Timer(lambda: skm.opening(imIn, se))
     nb = getNbAuto(ctit)
-    dt = ctit.repeat(repeat, nb)
+    dt = ctit.repeat(repeat = repeat, number = nb)
 
   if fs == 'tophat':
     ctit = tit.Timer(lambda: skm.white_tophat(imIn, se))
     nb = getNbAuto(ctit)
-    dt = ctit.repeat(repeat, nb)
+    dt = ctit.repeat(repeat = repeat, number = nb)
 
   if fs == 'gradient':
     imIn = imIn.astype('uint8')
     ctit = tit.Timer(lambda: rank.gradient(imIn, se))
     nb = getNbAuto(ctit)
-    dt = ctit.repeat(repeat, nb)
+    dt = ctit.repeat(repeat = repeat, number = nb)
 
   if fs == 'hMaxima':
     ctit = tit.Timer(lambda: skm.h_maxima(imIn, 10, se))
     nb = getNbAuto(ctit)
-    dt = ctit.repeat(repeat, nb)
+    dt = ctit.repeat(repeat = repeat, number = nb)
 
   if fs == 'hMinima':
     ctit = tit.Timer(lambda: skm.h_minima(imIn, 10, se))
     nb = getNbAuto(ctit)
-    dt = ctit.repeat(repeat, nb)
+    dt = ctit.repeat(repeat = repeat, number = nb)
 
   if fs == 'label':
     ctit = tit.Timer(lambda: skm.label(imIn, connectivity=2))
     nb = getNbAuto(ctit)
-    dt = ctit.repeat(repeat, nb)
+    dt = ctit.repeat(repeat = repeat, number = nb)
 
   if fs == 'fastLabel':
     ctit = tit.Timer(lambda: skm.label(imIn, connectivity=2))
     nb = getNbAuto(ctit)
-    dt = ctit.repeat(repeat, nb)
+    dt = ctit.repeat(repeat = repeat, number = nb)
 
   if fs == 'segmentation':
     if cli.binary:
       ctit = tit.Timer(lambda: binSegmentation(imIn))
       nb = getNbAuto(ctit)
-      dt = ctit.repeat(repeat, nb)
+      dt = ctit.repeat(repeat = repeat, number = nb)
     else:
       szg, szo = wsData[cli.fname]
       ctit = tit.Timer(lambda: graySegmentation(imIn, szg, szo))
       nb = getNbAuto(ctit)
-      dt = ctit.repeat(repeat, nb)
+      dt = ctit.repeat(repeat = repeat, number = nb)
 
   if fs == 'areaOpen':
     if cli.arg is None:
@@ -479,7 +481,7 @@ def skTime(cli, fs, imIn, sz, nb, repeat, px=1):
     ctit = tit.Timer(
       lambda: skm.area_opening(imIn, area_threshold=sz, connectivity=1))
     nb = getNbAuto(ctit)
-    dt = ctit.repeat(repeat, nb)
+    dt = ctit.repeat(repeat = repeat, number = nb)
 
   if fs == 'areaThreshold':
     if cli.arg is None:
@@ -487,31 +489,31 @@ def skTime(cli, fs, imIn, sz, nb, repeat, px=1):
     sz = int(cli.arg * px * px)
     ctit = tit.Timer(lambda: skAreaThreshold(imIn, sz=sz))
     nb = getNbAuto(ctit)
-    dt = ctit.repeat(repeat, nb)
+    dt = ctit.repeat(repeat = repeat, number = nb)
 
   if fs == 'distance':
     ctit = tit.Timer(lambda: ndi.distance_transform_edt(imIn))
     nb = getNbAuto(ctit)
-    dt = ctit.repeat(repeat, nb)
+    dt = ctit.repeat(repeat = repeat, number = nb)
 
   if fs == 'zhangSkeleton':
     imIn = imIn.astype(bool)
     ctit = tit.Timer(lambda: skm.skeletonize(imIn))
     nb = getNbAuto(ctit)
-    dt = ctit.repeat(repeat, nb)
+    dt = ctit.repeat(repeat = repeat, number = nb)
 
   if fs == 'thinning':
     imIn = imIn.astype(bool)
     ctit = tit.Timer(lambda: skm.thin(imIn))
     nb = getNbAuto(ctit)
-    dt = ctit.repeat(repeat, nb)
+    dt = ctit.repeat(repeat = repeat, number = nb)
 
   if cli.debug:
     print(" Debug : nb {:d}".format(int(nb)))
 
   if False and not ctit is None:
     nb = getNbAuto(ctit)
-    dt = ctit.repeat(repeat, nb)
+    dt = ctit.repeat(repeat = repeat, number = nb)
 
   dt = np.array(dt)
   dt *= (1000. / nb)
@@ -522,7 +524,7 @@ def skTime(cli, fs, imIn, sz, nb, repeat, px=1):
 # -----------------------------------------------------------------------------
 #
 #
-def doSkImage(cli, fin=None, fs=None, szIm=[], szSE=[1], nb=10, repeat=7):
+def doSkImage(cli, fin=None, fs=None, szIm=[], szSE=[1], repeat=7):
   if fs is None:
     return []
 
@@ -552,7 +554,7 @@ def doSkImage(cli, fin=None, fs=None, szIm=[], szSE=[1], nb=10, repeat=7):
     for sz in szSE:
       if cli.debug:
         printProcTime('Call skTime({:4.1f}, {:2d})'.format(szi, sz))
-      dt = skTime(cli, fs, imt, sz, nb, repeat, szi)
+      dt = skTime(cli, fs, imt, sz, repeat, szi)
       if cli.debug:
         printProcTime('Back from skTime()')
       fmt = '{:5.1f} - {:6.0f} {:2d} - {:11.3f} {:11.3f} {:11.3f} {:11.3f} - (ms)'
@@ -919,13 +921,11 @@ msm, npsm = doSmil(cli,
                    imPath,
                    cli.function,
                    szCoefs, [1],
-                   nb=nb,
                    repeat=repeat)
 msk, npsk = doSkImage(cli,
                       imPath,
                       cli.function,
                       szCoefs, [1],
-                      nb=nb,
                       repeat=repeat)
 tf = time.time()
 
@@ -952,13 +952,11 @@ if kFuncs[cli.function]:
                      imPath,
                      cli.function, [1],
                      seSizes,
-                     nb=nb,
                      repeat=repeat)
   msk, npsk = doSkImage(cli,
                         imPath,
                         cli.function, [1],
                         seSizes,
-                        nb=nb,
                         repeat=repeat)
   tf = time.time()
 
