@@ -104,7 +104,6 @@ def getNbAuto(tc=None):
   N = lnb[0]
   if lnb[1] < 1.:
     N = m.ceil(lnb[0] * (1. / lnb[1]))
-  print("   ===> lnb {:d} {:.3f}".format(int(lnb[0]), lnb[1]))
   return N
 
 
@@ -225,8 +224,35 @@ def smilTime(cli, fs, imIn, sz, repeat, px=1):
       nb = getNbAuto(ctit)
       dt = ctit.repeat(repeat = repeat, number = nb)
     else:
-      h, sz = wsData[cli.fname]
+      h, sz = wsData[cli.image]
       ctit = tit.Timer(lambda: graySegmentation(imIn, imOut, h, sz))
+      nb = getNbAuto(ctit)
+      dt = ctit.repeat(repeat = repeat, number = nb)
+
+  if fs == 'watershed':
+    if cli.binary:
+      se = sp.HexSE()
+      imDist = sp.Image(imIn)
+      sp.distance(imIn, imDist)
+      sp.inv(imDist, imDist)
+      ctit = tit.Timer(lambda: sp.watershed(imDist, imOut, se(4)))
+      nb = getNbAuto(ctit)
+      dt = ctit.repeat(repeat = repeat, number = nb)
+    else:
+      h, sz = wsData[cli.image]
+      se = sp.HexSE()
+      imOpen = sp.Image(imIn)
+      if sz > 0:
+        sp.open(imIn, imOpen, sp.HexSE(sz))
+      else:
+        sp.copy(imIn, imOpen)
+      imGrad = sp.Image(imIn)
+      imMin = sp.Image(imIn)
+      sp.gradient(imOpen, imGrad, se)
+      sp.hMinima(imGrad, h, imMin, se)
+      imLabel = sp.Image(imOpen, 'UINT16')
+      sp.label(imMin, imLabel)
+      ctit = tit.Timer(lambda: sp.watershed(imGrad, imLabel, imOut, se))
       nb = getNbAuto(ctit)
       dt = ctit.repeat(repeat = repeat, number = nb)
 
@@ -470,8 +496,39 @@ def skTime(cli, fs, imIn, sz, repeat, px=1):
       nb = getNbAuto(ctit)
       dt = ctit.repeat(repeat = repeat, number = nb)
     else:
-      szg, szo = wsData[cli.fname]
+      szg, szo = wsData[cli.image]
       ctit = tit.Timer(lambda: graySegmentation(imIn, szg, szo))
+      nb = getNbAuto(ctit)
+      dt = ctit.repeat(repeat = repeat, number = nb)
+
+  if fs == 'watershed':
+    if cli.binary:
+      imIn = imIn.astype(int)
+      dist = ndi.distance_transform_edt(imIn)
+      se = skm.selem.diamond(3)
+      coords = peak_local_max(dist,
+                              footprint=se,
+                              labels=imIn)
+      mask = np.zeros(dist.shape, dtype=bool)
+      mask[tuple(coords.T)] = True
+      markers, _ = ndi.label(mask)
+      ctit = tit.Timer(lambda: watershed(-dist, markers, mask=imIn))
+      nb = getNbAuto(ctit)
+      dt = ctit.repeat(repeat = repeat, number = nb)
+    else:
+      szg, szo = wsData[cli.image]
+      imIn = imIn.astype('uint8')
+      # denoise image
+      denoised = rank.median(imIn, skm.disk(szo))
+      # find continuous region (low gradient -
+      # where less than 10 for this image) --> markers
+      # disk(5) is used here to get a more smooth image
+      markers = rank.gradient(denoised, skm.disk(szg)) < 10
+      markers = ndi.label(markers)[0]
+      # local gradient (disk(2) is used to keep edges thin)
+      gradient = rank.gradient(denoised, skm.disk(2))
+      # process the watershed
+      ctit = tit.Timer(lambda: watershed(gradient, markers))
       nb = getNbAuto(ctit)
       dt = ctit.repeat(repeat = repeat, number = nb)
 
@@ -616,7 +673,7 @@ def saveResults(cli, sz, vSm, vSk, fName=None, suffix="szim"):
       fName = "bin"
     else:
       fName = "gray"
-    b, x = os.path.splitext(cli.fname)
+    b, x = os.path.splitext(cli.image)
     fName += '-{:s}-{:s}-{:s}.csv'.format(b, cli.function, suffix)
 
   if not os.path.isdir(cli.node):
@@ -680,6 +737,7 @@ kFuncs = {
   'distance': False,
   'areaThreshold': False,
   'segmentation': False,
+  'watershed': False,
   'watershedOnly': False,
   'zhangSkeleton': False,
   'thinning': False
@@ -712,7 +770,7 @@ def appLoadFileConfig(fconfig=None):
 #
 def getCliArgs():
   parser = ap.ArgumentParser()
-  parser.add_argument('--fname',
+  parser.add_argument('--image',
                       default='notfound.png',
                       help='Image file',
                       type=str)
@@ -862,7 +920,7 @@ cli = getCliArgs()
 nb = 20
 repeat = 7
 
-fin = cli.fname
+fin = cli.image
 nb = cli.nb
 repeat = cli.repeat
 funcName = cli.function

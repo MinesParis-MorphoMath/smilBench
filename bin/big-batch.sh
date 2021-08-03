@@ -85,11 +85,12 @@ function runIt()
 mkdir -p var
 
 # default functions for binary images
-runIt bin funcs=erode          repeat=7
-runIt bin funcs=open           repeat=7
-runIt bin funcs=label          repeat=7
-runIt bin funcs=distance       repeat=7
-runIt bin funcs=areaThreshold  repeat=7
+runIt bin  funcs=erode          repeat=7
+runIt bin  funcs=open           repeat=7
+runIt bin  funcs=label          repeat=7
+runIt bin  funcs=distance       repeat=7
+runIt bin  funcs=areaThreshold  repeat=7
+runIt bin  funcs=zhangSkeleton repeat=7
 
 # default functions for gray images
 runIt gray funcs=erode         repeat=7
@@ -105,7 +106,6 @@ runIt bin  funcs=segmentation  repeat=7
 runIt gray funcs=hMinima       repeat=7
 runIt gray funcs=areaOpen      repeat=7
 
-runIt bin  funcs=zhangSkeleton repeat=7
 runIt bin  funcs=thinning      repeat=7
 
 exit 0

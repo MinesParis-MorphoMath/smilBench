@@ -88,7 +88,7 @@ do
 
     fout=$(echo $fname | sed s/png/txt/)
     fout=${Prefix}-${bname}-${f}.txt
-    bin/smil-vs-skimage.py  --fname $fname \
+    bin/smil-vs-skimage.py  --image $fname \
                             --function $f \
                             --minImSize=$minImSize \
                             --maxImSize=$maxImSize \
