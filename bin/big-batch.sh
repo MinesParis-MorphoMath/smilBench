@@ -99,6 +99,7 @@ runIt gray funcs=tophat        repeat=7
 runIt gray funcs=gradient      repeat=7
 
 # segmentation
+runIt gray funcs=watershed     repeat=7
 runIt gray funcs=segmentation  repeat=7
 runIt bin  funcs=segmentation  repeat=7
 
