@@ -30,7 +30,7 @@ def main(args):
 
   for f in files:
     r = 1
-    for i in range(1, 10):
+    for i in range(1, 8):
       imOut, w, h = mkMosaic(f, r, r)
       imLabel = sp.Image(imOut, 'UINT32')
 
@@ -38,6 +38,7 @@ def main(args):
       n, t = ct.autorange()
       if t < 1:
         n = int(n / t)
+      print("* {:8d}".format(w))
       print("  Running Smil")
       dtsm = ct.repeat(nr, n)
       dtsm = np.array(dtsm) * 1000. / n
