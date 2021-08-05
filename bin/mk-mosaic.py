@@ -38,6 +38,7 @@ def main(args):
       n, t = ct.autorange()
       if t < 1:
         n = int(n / t)
+      print("  Running Smil")
       dtsm = ct.repeat(nr, n)
       dtsm = np.array(dtsm) * 1000. / n
 
@@ -48,6 +49,7 @@ def main(args):
       n, t = ct.autorange()
       if t < 1:
         n = int(n / t)
+      print("  Running skImage")
       dtsk = ct.repeat(nr, n)
       dtsk = np.array(dtsk) * 1000. / n
 
