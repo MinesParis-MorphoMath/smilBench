@@ -128,18 +128,13 @@ def smilTime(cli, fs, imIn, sz, repeat, px=1):
   #
   #
   #
-  def binSegmentation(imIn, imOut, onlyWS=False):
+  def binSegmentation(imIn, imOut):
     dt = []
     se = sp.HexSE()
     imDist = sp.Image(imIn)
     sp.distance(imIn, imDist)
     sp.inv(imDist, imDist)
-    if onlyWS:
-      dt = tit.repeat(lambda: sp.watershed(imDist, imOut, se),
-                      number=nb,
-                      repeat=repeat)
-    else:
-      sp.watershed(imDist, imOut, se)
+    sp.watershed(imDist, imOut, se)
     sp.inv(imOut, imOut)
     sp.inf(imIn, imOut, imOut)
     return dt
@@ -481,7 +476,7 @@ def skTime(cli, fs, imIn, sz, repeat, px=1):
     dt = ctit.repeat(repeat = repeat, number = nb)
 
   if fs == 'label':
-    ctit = tit.Timer(lambda: skm.label(imIn, connectivity=2))
+    ctit = tit.Timer(lambda: skm.label(imIn, connectivity=1))
     nb = getNbAuto(ctit)
     dt = ctit.repeat(repeat = repeat, number = nb)
 
@@ -733,6 +728,7 @@ kFuncs = {
   'hMaxima': True,
   'hMinima': True,
   'label': False,
+  'fastLabel': False,
   'areaOpen': False,
   'distance': False,
   'areaThreshold': False,
@@ -778,7 +774,6 @@ def getCliArgs():
   parser.add_argument('--debug', help='', action="store_true")
   parser.add_argument('--verbose', help='', action="store_true")
 
-  parser.add_argument('--nb', default=20, help='nb execs', type=int)
   parser.add_argument('--repeat', default=7, help='nb rounds', type=int)
   parser.add_argument('--selector',
                       default='mean',
@@ -917,11 +912,9 @@ def whichData(arr, selector="mean"):
 #
 cli = getCliArgs()
 
-nb = 20
 repeat = 7
 
 fin = cli.image
-nb = cli.nb
 repeat = cli.repeat
 funcName = cli.function
 
@@ -945,7 +938,6 @@ if isBin:
 else:
   print('  type   : gray')
 print('Function : {:s}'.format(cli.function))
-#print('  nb     : {:5d}'.format(nb))
 print('  repeat : {:5d}'.format(repeat))
 
 print()
