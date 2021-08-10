@@ -24,17 +24,23 @@ def mkMosaic(fin = None, nx = 2, ny = 2):
   return imOut, w * nx, h * ny
 
 nr = 2
+szTst = 16384
 
 def main(args):
   files = sys.argv[1:]
 
   for f in files:
     r = 1
-    for i in range(1, 8):
-      imOut, w, h = mkMosaic(f, r, r)
-      imLabel = sp.Image(imOut, 'UINT32')
+    for i in range(1, 7):
+      imMosaic, w, h = mkMosaic(f, r, r)
+      imTst = sp.Image()
+      if False:
+        sp.copy(imMosaic, imTst)
+      else:
+        sp.resize(imMosaic, szTst, szTst, imTst, "closest")
+      imLabel = sp.Image(imTst, 'UINT32')
 
-      ct = tit.Timer(lambda: sp.label(imOut, imLabel, sp.CrossSE()))
+      ct = tit.Timer(lambda: sp.label(imTst, imLabel, sp.CrossSE()))
       n, t = ct.autorange()
       if t < 1:
         n = int(n / t)
@@ -43,9 +49,9 @@ def main(args):
       dtsm = ct.repeat(nr, n)
       dtsm = np.array(dtsm) * 1000. / n
 
-      smMax = sp.label(imOut, imLabel, sp.CrossSE())
+      smMax = sp.label(imTst, imLabel, sp.CrossSE())
 
-      imArr = imOut.getNumArray()
+      imArr = imTst.getNumArray()
       ct = tit.Timer(lambda: skm.label(imArr, connectivity = 1))
       n, t = ct.autorange()
       if t < 1:
@@ -60,7 +66,9 @@ def main(args):
       tsm = dtsm.min()
       tsk = dtsk.min()
       sUp = tsk / tsm
-      print("{:3d} - {:6d} {:6d} - {:9.3f} {:9.3f} - {:7.3f} - {:7d} {:7d}".format(i, w, h, tsm, tsk, sUp, smMax, skMax))
+
+      fmt = "{:3d} - {:6d} {:6d} - {:9.3f} {:9.3f} - {:7.3f} - {:7d} {:7d}"
+      print(fmt.format(i, w, h, tsm, tsk, sUp, smMax, skMax))
 
       r *= 2
 
