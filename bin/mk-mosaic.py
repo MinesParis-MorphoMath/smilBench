@@ -75,4 +75,9 @@ def main(args):
 
 if __name__ == '__main__':
     import sys
+
+    pid = os.getpid()
+    print("pid : {:d}".format(pid)
+    input("Hit enter to continue")
+
     sys.exit(main(sys.argv))
