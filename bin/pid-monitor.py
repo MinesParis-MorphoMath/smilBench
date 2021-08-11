@@ -64,6 +64,7 @@ def getCliArgs():
 
   parser.add_argument('--pid', default=None, help='PID to monitor', type=int)
   parser.add_argument('--dt', default=1, help='time interval', type=int)
+  parser.add_argument('--csv', help='output CSV format', action='store_true')
 
   cli = parser.parse_args()
   return cli
@@ -78,15 +79,27 @@ def main(args):
   if cli.pid is None:
     return 1
 
-  process = psutil.Process(cli.pid)
-  _ = process.cpu_percent(1.)
+  try:
+    process = psutil.Process(cli.pid)
+    _ = process.cpu_percent(1.)
+  except:
+    return 1
+
   t = cli.dt
+  if cli.csv:
+    print('{:s};{:s};{:s};{:s}'.format('date','cpu','virt','res'))
   while True:
-    cpu = process.cpu_percent(cli.dt)
+    try:
+      cpu = process.cpu_percent(cli.dt)
+    except:
+      break
     mem = process.memory_info()
     rss = mem.rss // 1024
     vms = mem.vms // 1024
-    print("{:6d} : {:7.2f} % - {:10d} {:10d}".format(t, cpu, vms, rss))
+    if not cli.csv:
+      print("{:6d} : {:7.2f} % - {:10d} {:10d}".format(t, cpu, vms, rss))
+    else:
+      print("{:d};{:.2f};{:d};{:d}".format(t, cpu, vms, rss))
     t += cli.dt
 
   return 0
