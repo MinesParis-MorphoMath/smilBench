@@ -2,8 +2,14 @@
 
 import sys
 import os
+
 import smilPython as sp
 import skimage.morphology as skm
+from skimage.filters import rank
+from scipy import ndimage as ndi
+from skimage.segmentation import watershed
+import skimage.segmentation as sks
+
 import numpy as np
 import timeit as tit
 
@@ -29,17 +35,22 @@ def getCliArgs():
 
   parser.add_argument('--function',
                       default='label',
-                      help='function to test',
+                      help='function to test (default : label)',
                       type=str)
   parser.add_argument('--which',
                       default='both',
-                      help='which ? both, smil skimage',
+                      help='which ? both, smil skimage (default : both)',
                       type=str)
   parser.add_argument('--csv', help='output CSV format', action='store_true')
 
   parser.add_argument('--repeat', default=7, help='', type=int)
-  parser.add_argument('--imsize', default=8192, help='', type=int)
-  parser.add_argument('--resize', help='resize image to imsize', action="store_true")
+  parser.add_argument('--imsize',
+                      default=8192,
+                      help='work image size (default : 8192)',
+                      type=int)
+  parser.add_argument('--resize',
+                      help='resize image to imsize',
+                      action="store_true")
 
   parser.add_argument('files',
                       metavar='file',
@@ -82,7 +93,7 @@ def main(cli, args):
     if cli.verbose:
       print("*  Running skImage ({:d}x{:d})".format(w, h))
 
-    imArr = imTst.getNumArray()
+    imArr = imTst.getNumArray().copy()
 
     ct = tit.Timer(lambda: skm.label(imArr, connectivity=1))
     n = getNumber(ct)
@@ -119,7 +130,7 @@ def main(cli, args):
     if cli.verbose:
       print("*  Running skImage ({:d}x{:d})".format(w, h))
 
-    imArr = imTst.getNumArray()
+    imArr = imTst.getNumArray().copy()
 
     se = skm.selem.diamond(1)
     ct = tit.Timer(lambda: skm.opening(imArr, se))
@@ -151,6 +162,66 @@ def main(cli, args):
     return tsm, smMax
 
   #
+  # watershed
+  #
+  def skWatershed(imTst):
+    wsData = {
+    'astronaut.png': [2, 5],
+    'bubbles_gray.png': [1, 3],
+    'hubble_EDF_gray.png': [1, 2],
+    'lena.png': [3, 5],
+    'tools.png': [1, 3],
+    }
+
+    if cli.verbose:
+      print("*  Running skImage ({:d}x{:d})".format(w, h))
+
+    imArr = imTst.getNumArray().copy()
+
+    szg, szo = wsData['lena.png']
+    imIn = imArr.astype('uint8')
+    denoised = rank.median(imIn, skm.disk(szo))
+    markers = rank.gradient(denoised, skm.disk(szg)) < 10
+    markers = ndi.label(markers)[0]
+    gradient = rank.gradient(denoised, skm.disk(2))
+
+    ct = tit.Timer(lambda: watershed(gradient, markers))
+    n = getNumber(ct)
+    dtsk = ct.repeat(repeat = nr, number = n)
+
+    dtsk = np.array(dtsk) * 1000. / n
+
+    skMax = 0
+    tsk = dtsk.min()
+
+    return tsk, skMax
+
+  def smWatershed(imTst):
+    if cli.verbose:
+      print("*  Running Smil ({:d}x{:d})".format(w, h))
+
+    se = sp.CrossSE()
+    sz = 1
+    if sz > 0:
+      sp.open(imTst, imTst, sp.HexSE(sz))
+    imGrad = sp.Image(imTst)
+    imMin = sp.Image(imTst)
+    sp.gradient(imTst, imGrad, se)
+    sp.hMinima(imGrad, 10, imMin, se)
+    imLabel = sp.Image(imTst, 'UINT32')
+    sp.label(imMin, imLabel)
+    imOut = sp.Image(imTst)
+    ct = tit.Timer(lambda: sp.watershed(imGrad, imLabel, imOut, se))
+    n = getNumber(ct)
+    dtsm = ct.repeat(repeat = nr, number = n)
+
+    dtsm = np.array(dtsm) * 1000. / n
+
+    smMax = 0
+    tsm = dtsm.min()
+
+    return tsm, smMax
+  #
   # M A I N
   #
   #files = sys.argv[1:]
@@ -160,7 +231,7 @@ def main(cli, args):
 
   for f in files:
     r = 1
-    for i in range(0, 8):
+    for i in range(0, 5):
       imMosaic, w, h = mkMosaic(f, r, r)
       imTst = sp.Image()
       if cli.resize:
@@ -179,6 +250,8 @@ def main(cli, args):
           tsk, skMax = skLabel(imTst)
         if cli.function == 'open':
           tsk, skMax = skOpen(imTst)
+        if cli.function == 'watershed':
+          tsk, skMax = skWatershed(imTst)
 
       #
       # smil
@@ -191,6 +264,8 @@ def main(cli, args):
           tsm, smMax = smLabel(imTst)
         if cli.function == 'open':
           tsm, smMax = smOpen(imTst)
+        if cli.function == 'watershed':
+          tsm, smMax = smWatershed(imTst)
 
       #
       # the end
