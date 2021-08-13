@@ -91,8 +91,8 @@ def main(cli, args):
   #
   def getNumber(ct):
     n, t = ct.autorange()
-    if t < 1:
-      n = int(n / t)
+    if t < 2:
+      n = int(2 * n / t)
     return n
 
   #
@@ -317,5 +317,6 @@ if __name__ == '__main__':
     pid = os.getpid()
     print("pid : {:d}".format(pid))
     input("Hit enter to continue")
+    print("OK ! Let's go...")
 
   sys.exit(main(cli, sys.argv))
