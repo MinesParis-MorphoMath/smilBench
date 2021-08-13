@@ -52,6 +52,15 @@ def getCliArgs():
                       help='resize image to imsize',
                       action="store_true")
 
+  parser.add_argument('--ri',
+                      default=1,
+                      help='initial image size multiplier (default : 1)',
+                      type=int)
+  parser.add_argument('--nr',
+                      default=1,
+                      help='number of rounds (default : 1)',
+                      type=int)
+
   parser.add_argument('files',
                       metavar='file',
                       type=str,
@@ -166,11 +175,11 @@ def main(cli, args):
   #
   def skWatershed(imTst):
     wsData = {
-    'astronaut.png': [2, 5],
-    'bubbles_gray.png': [1, 3],
-    'hubble_EDF_gray.png': [1, 2],
-    'lena.png': [3, 5],
-    'tools.png': [1, 3],
+      'astronaut.png': [2, 5],
+      'bubbles_gray.png': [1, 3],
+      'hubble_EDF_gray.png': [1, 2],
+      'lena.png': [3, 5],
+      'tools.png': [1, 3],
     }
 
     if cli.verbose:
@@ -178,7 +187,11 @@ def main(cli, args):
 
     imArr = imTst.getNumArray().copy()
 
-    szg, szo = wsData['lena.png']
+    fin = 'lena.png'
+    if fin in wsData:
+      szg, szo = wsData[fin]
+    else:
+      szg, szo = 3, 5
     imIn = imArr.astype('uint8')
     denoised = rank.median(imIn, skm.disk(szo))
     markers = rank.gradient(denoised, skm.disk(szg)) < 10
@@ -187,7 +200,7 @@ def main(cli, args):
 
     ct = tit.Timer(lambda: watershed(gradient, markers))
     n = getNumber(ct)
-    dtsk = ct.repeat(repeat = nr, number = n)
+    dtsk = ct.repeat(repeat=nr, number=n)
 
     dtsk = np.array(dtsk) * 1000. / n
 
@@ -197,11 +210,22 @@ def main(cli, args):
     return tsk, skMax
 
   def smWatershed(imTst):
+    wsData = {
+      'astronaut.png': [10, 0],
+      'bubbles_gray.png': [10, 5],
+      'hubble_EDF_gray.png': [5, 1],
+      'lena.png': [5, 0],
+      'tools.png': [10, 1],
+    }
     if cli.verbose:
       print("*  Running Smil ({:d}x{:d})".format(w, h))
 
     se = sp.CrossSE()
-    sz = 1
+    fin = 'lena.png'
+    if not fin in wsData:
+      h, sz = wsData[fin]
+    else:
+      h, sz = 10, 1
     if sz > 0:
       sp.open(imTst, imTst, sp.HexSE(sz))
     imGrad = sp.Image(imTst)
@@ -213,7 +237,7 @@ def main(cli, args):
     imOut = sp.Image(imTst)
     ct = tit.Timer(lambda: sp.watershed(imGrad, imLabel, imOut, se))
     n = getNumber(ct)
-    dtsm = ct.repeat(repeat = nr, number = n)
+    dtsm = ct.repeat(repeat=nr, number=n)
 
     dtsm = np.array(dtsm) * 1000. / n
 
@@ -221,6 +245,7 @@ def main(cli, args):
     tsm = dtsm.min()
 
     return tsm, smMax
+
   #
   # M A I N
   #
@@ -230,8 +255,8 @@ def main(cli, args):
   nr = cli.repeat
 
   for f in files:
-    r = 1
-    for i in range(0, 5):
+    r = cli.ri
+    for i in range(0, cli.nr):
       imMosaic, w, h = mkMosaic(f, r, r)
       imTst = sp.Image()
       if cli.resize:
@@ -275,8 +300,11 @@ def main(cli, args):
       else:
         sUp = 0
 
-      fmt = "{:3d} - {:6d} {:6d} - {:9.3f} {:9.3f} - {:7.3f} - {:7d} {:7d}"
-      print(fmt.format(i, w, h, tsm, tsk, sUp, smMax, skMax))
+      if cli.csv:
+        fmt = "{:d};{:d};{:d};{:d};{:.3f};{:.3f};{:.3f};{:d};{:d}"
+      else:
+        fmt = "{:3d} - {:3d} - {:6d} {:6d} - {:10.3f} {:10.3f} - {:7.3f} - {:7d} {:7d}"
+      print(fmt.format(i, r, w, h, tsm, tsk, sUp, smMax, skMax))
 
       r *= 2
 
