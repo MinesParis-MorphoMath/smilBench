@@ -321,6 +321,7 @@ def main(cli, args):
           cliDict = cli.__dict__
           for attr in cliDict.keys():
             s = '=> attr {:<10s} : {:s}'.format(attr, str(cliDict[attr]))
+            fout.write(s + '\n')
             print(s)
 
       r *= 2
