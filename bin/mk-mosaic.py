@@ -69,6 +69,10 @@ def getCliArgs():
                       nargs='+',
                       help='image files')
 
+  parser.add_argument('--save',
+                      help='save result to file',
+                      action='store_true')
+
   cli = parser.parse_args()
   return cli
 
@@ -308,7 +312,11 @@ def main(cli, args):
         fmt = "{:d};{:d};{:d};{:d};{:.3f};{:.3f};{:.3f};{:d};{:d}"
       else:
         fmt = "{:3d} - {:3d} - {:6d} {:6d} - {:10.3f} {:10.3f} - {:7.3f} - {:7d} {:7d}"
-      print(fmt.format(i, r, w, h, tsm, tsk, sUp, smMax, skMax))
+      sout = fmt.format(i, r, w, h, tsm, tsk, sUp, smMax, skMax)
+      print(sout)
+      if cli.save:
+        with open(bOut + '.txt', w) as fout:
+          fout.write(sout + '\n')
 
       r *= 2
 
@@ -317,16 +325,19 @@ if __name__ == '__main__':
   import sys
 
   cli = getCliArgs()
+
+  bName = os.path.basename(cli.files[0])
+  iName, _ = os.path.splitext(bName)
+  fmt = "usage-{:s}-{:s}-{:s}-{:03d}-{:02d}-{:05d}"
+  bOut = fmt.format(cli.function, iName, cli.which, cli.ri, cli.nr, cli.imsize)
+
   if cli.showpid:
     pid = os.getpid()
     print("pid : {:d}".format(pid))
 
     # taurus-watershed-lena-skimage-04-01-16384.csv
-    bName = os.path.basename(cli.files[0])
-    iName, _ = os.path.splitext(bName)
-    fmt = "usage-{:s}-{:s}-{:s}-{:03d}-{:02d}-{:05d}.csv"
-    s = fmt.format(cli.function, iName, cli.which, cli.ri, cli.nr, cli.imsize)
-    print("bin/pid-monitor.py --csv --pid {:d} > {:s}".format(pid, s))
+
+    print("bin/pid-monitor.py --csv --pid {:d} > {:s}.csv".format(pid, bOut))
 
     input("Hit enter to continue")
     print("OK ! Let's go...")
