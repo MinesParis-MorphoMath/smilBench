@@ -323,7 +323,7 @@ if __name__ == '__main__':
     iName, _ = os.path.splitext(bName)
     fmt = "usage-{:s}-{:s}-{:s}-{:03d}-{:02d}-{:05d}.csv"
     s = fmt.format(cli.function, iName, cli.which, cli.ri, cli.nr, cli.imsize)
-    print("bin/pid-monitor.py --pid {:d} > {:s}".format(pid, s))
+    print("bin/pid-monitor.py --csv --pid {:d} > {:s}".format(pid, s))
 
     input("Hit enter to continue")
     print("OK ! Let's go...")
