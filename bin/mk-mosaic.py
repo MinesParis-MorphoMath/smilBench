@@ -317,8 +317,9 @@ if __name__ == '__main__':
     # taurus-watershed-lena-skimage-04-01-16384.csv
     bName = os.path.basename(cli.files[0])
     iName, _ = os.path.splitext(bName)
-    fmt = "usage-{:s}-{:s}-{:s}-{:03d}-{:02d}-{!05d}.csv"
-    print(fmt.format(cli.function, iName, cli.which, cli.ri, cli.nr, cli.imsize)
+    fmt = "usage-{:s}-{:s}-{:s}-{:03d}-{:02d}-{:05d}.csv"
+    print(
+      fmt.format(cli.function, iName, cli.which, cli.ri, cli.nr, cli.imsize))
     pid = os.getpid()
     print("pid : {:d}".format(pid))
     input("Hit enter to continue")
