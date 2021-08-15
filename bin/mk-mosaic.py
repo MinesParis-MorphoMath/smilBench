@@ -315,8 +315,13 @@ def main(cli, args):
       sout = fmt.format(i, r, w, h, tsm, tsk, sUp, smMax, skMax)
       print(sout)
       if cli.save:
-        with open(bOut + '.txt', w) as fout:
+        with open(bOut + '.txt', 'w') as fout:
           fout.write(sout + '\n')
+          print()
+          cliDict = cli.__dict__
+          for attr in cliDict.keys():
+            s = '=> attr {:<10s} : {:s}'.format(attr, str(cliDict[attr]))
+            print(s)
 
       r *= 2
 
