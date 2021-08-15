@@ -2,6 +2,7 @@
 
 import sys
 import os
+import time
 
 import smilPython as sp
 import skimage.morphology as skm
@@ -327,4 +328,7 @@ if __name__ == '__main__':
     input("Hit enter to continue")
     print("OK ! Let's go...")
 
-  sys.exit(main(cli, sys.argv))
+
+  r = main(cli, sys.argv)
+  time.sleep(1)
+  sys.exit(r)
