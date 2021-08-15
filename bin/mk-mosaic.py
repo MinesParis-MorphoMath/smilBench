@@ -2,6 +2,7 @@
 
 import sys
 import os
+import gc
 import time
 
 import smilPython as sp
@@ -278,6 +279,7 @@ def main(cli, args):
           tsk, skMax = skOpen(imTst)
         if cli.function == 'watershed':
           tsk, skMax = skWatershed(imTst)
+        gc.collect()
 
       #
       # smil
@@ -292,6 +294,7 @@ def main(cli, args):
           tsm, smMax = smOpen(imTst)
         if cli.function == 'watershed':
           tsm, smMax = smWatershed(imTst)
+        gc.collect()
 
       #
       # the end
