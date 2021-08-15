@@ -314,14 +314,16 @@ if __name__ == '__main__':
 
   cli = getCliArgs()
   if cli.showpid:
+    pid = os.getpid()
+    print("pid : {:d}".format(pid))
+
     # taurus-watershed-lena-skimage-04-01-16384.csv
     bName = os.path.basename(cli.files[0])
     iName, _ = os.path.splitext(bName)
     fmt = "usage-{:s}-{:s}-{:s}-{:03d}-{:02d}-{:05d}.csv"
-    print(
-      fmt.format(cli.function, iName, cli.which, cli.ri, cli.nr, cli.imsize))
-    pid = os.getpid()
-    print("pid : {:d}".format(pid))
+    s = fmt.format(cli.function, iName, cli.which, cli.ri, cli.nr, cli.imsize)
+    print("bin/pid-monitor.py --pid {:d} > {:s}".format(pid, s))
+
     input("Hit enter to continue")
     print("OK ! Let's go...")
 
