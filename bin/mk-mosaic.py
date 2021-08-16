@@ -2,6 +2,7 @@
 
 import sys
 import os
+import platform
 import gc
 import time
 
@@ -336,6 +337,12 @@ if __name__ == '__main__':
   iName, _ = os.path.splitext(bName)
   fmt = "usage-{:s}-{:s}-{:s}-{:03d}-{:02d}-{:05d}"
   bOut = fmt.format(cli.function, iName, cli.which, cli.ri, cli.nr, cli.imsize)
+
+  node = platform.node()
+  node = node.split('.')
+  cli.node = node[0]
+  fmt = "{:s}-usage-{:s}-{:s}-{:s}-{:05d}"
+  bOut = fmt.format(cli.node, cli.function, iName, cli.which, cli.imsize)
 
   if cli.showpid:
     pid = os.getpid()
