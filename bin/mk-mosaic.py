@@ -178,6 +178,45 @@ def main(cli, args):
     return tsm, smMax
 
   #
+  # H M I N I M A
+  #
+  def skhMinima(imTst):
+    if cli.verbose:
+      print("*  Running skImage ({:d}x{:d})".format(w, h))
+
+    imArr = imTst.getNumArray().copy()
+
+    se = skm.selem.diamond(1)
+    ct = tit.Timer(lambda: skm.h_minima(imArr, 10, se))
+    n = getNumber(ct)
+    dtsk = ct.repeat(nr, n)
+
+    dtsk = np.array(dtsk) * 1000. / n
+
+    skMax = 0
+    tsk = dtsk.min()
+    return tsk, skMax
+
+  def smhMinima(imTst):
+    if cli.verbose:
+      print("*  Running Smil ({:d}x{:d})".format(w, h))
+
+    se = sp.CrossSE()
+    imOut = sp.Image(imTst)
+
+    ct = tit.Timer(lambda: sp.hMinima(imTst, 10, imOut, se))
+    n = getNumber(ct)
+    dtsm = ct.repeat(nr, n)
+
+    dtsm = np.array(dtsm) * 1000. / n
+
+    smMax = 0
+    tsm = dtsm.min()
+
+    return tsm, smMax
+
+
+  #
   # watershed
   #
   def skWatershed(imTst):
@@ -282,6 +321,8 @@ def main(cli, args):
           tsk, skMax = skLabel(imTst)
         if cli.function == 'open':
           tsk, skMax = skOpen(imTst)
+        if cli.function == 'hMinima':
+          tsk, skMax = skhMinima(imTst)
         if cli.function == 'watershed':
           tsk, skMax = skWatershed(imTst)
         gc.collect()
@@ -297,6 +338,8 @@ def main(cli, args):
           tsm, smMax = smLabel(imTst)
         if cli.function == 'open':
           tsm, smMax = smOpen(imTst)
+        if cli.function == 'hMinima':
+          tsm, smMax = smhMinima(imTst)
         if cli.function == 'watershed':
           tsm, smMax = smWatershed(imTst)
         gc.collect()
